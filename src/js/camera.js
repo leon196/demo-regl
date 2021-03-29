@@ -59,8 +59,8 @@ function createCamera (regl, props) {
     return Math.min(Math.max(x, lo), hi)
   }
 
-  function updateCamera (position) {
-    var center = cameraState.center
+  function updateCamera (position, target) {
+    var center = target || cameraState.center
     var eye = position || cameraState.eye
     var up = cameraState.up
 
@@ -111,8 +111,8 @@ function createCamera (regl, props) {
     }, {})
   })
 
-  function setupCamera (position, block) {
-    updateCamera(position)
+  function setupCamera (position, target, block) {
+    updateCamera(position, target)
     injectContext(block)
   }
 

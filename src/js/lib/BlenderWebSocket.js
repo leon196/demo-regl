@@ -42,12 +42,12 @@ class BlenderWebSocket {
 					return;
 				}
 
-				console.log(data);
+				// console.log(data);
 
 				if (data[0] == 'data')
 				{
 					// console.log(data[1].objects.Camera.location);
-					emit('camera', data[1].objects.Camera.location);
+					emit('data', data[1].objects);
 				}
 
 				if (data[2] !== undefined)
