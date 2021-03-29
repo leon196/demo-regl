@@ -59,36 +59,38 @@ function createCamera (regl, props) {
     return Math.min(Math.max(x, lo), hi)
   }
 
-  function updateCamera () {
+  function updateCamera (position) {
     var center = cameraState.center
-    var eye = cameraState.eye
+    var eye = position || cameraState.eye
     var up = cameraState.up
 
-    cameraState.theta += dtheta
-    cameraState.phi = clamp(
-      cameraState.phi + dphi,
-      -Math.PI / 2.0,
-      Math.PI / 2.0)
-    cameraState.distance = clamp(
-      cameraState.distance + ddistance,
-      minDistance,
-      maxDistance)
+    // console.log(eye);
 
-    dtheta = damp(dtheta)
-    dphi = damp(dphi)
-    ddistance = damp(ddistance)
+    // cameraState.theta += dtheta
+    // cameraState.phi = clamp(
+    //   cameraState.phi + dphi,
+    //   -Math.PI / 2.0,
+    //   Math.PI / 2.0)
+    // cameraState.distance = clamp(
+    //   cameraState.distance + ddistance,
+    //   minDistance,
+    //   maxDistance)
 
-    var theta = cameraState.theta
-    var phi = cameraState.phi
-    var r = Math.exp(cameraState.distance)
+    // dtheta = damp(dtheta)
+    // dphi = damp(dphi)
+    // ddistance = damp(ddistance)
 
-    var vf = r * Math.sin(theta) * Math.cos(phi)
-    var vr = r * Math.cos(theta) * Math.cos(phi)
-    var vu = r * Math.sin(phi)
+    // var theta = cameraState.theta
+    // var phi = cameraState.phi
+    // var r = Math.exp(cameraState.distance)
 
-    for (var i = 0; i < 3; ++i) {
-      eye[i] = center[i] + vf * front[i] + vr * right[i] + vu * up[i]
-    }
+    // var vf = r * Math.sin(theta) * Math.cos(phi)
+    // var vr = r * Math.cos(theta) * Math.cos(phi)
+    // var vu = r * Math.sin(phi)
+
+    // for (var i = 0; i < 3; ++i) {
+    //   eye[i] = center[i] + vf * front[i] + vr * right[i] + vu * up[i]
+    // }
 
     lookAt(cameraState.view, eye, center, up)
   }
@@ -109,8 +111,8 @@ function createCamera (regl, props) {
     }, {})
   })
 
-  function setupCamera (block) {
-    updateCamera()
+  function setupCamera (position, block) {
+    updateCamera(position)
     injectContext(block)
   }
 

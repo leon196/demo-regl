@@ -23,10 +23,11 @@ regl.frame(function () {
     regl.clear({
         color: [0, 0, 0, 1]
     })
-    camera(() => {
-        neon({ time: regl.now() })
-    })
 
     var position = animations['CameraAction'].paths['location'].evaluate(elapsed);
+    
+    camera(position, () => {
+        neon({ time: regl.now() })
+    })
     // console.log(position);
 })
