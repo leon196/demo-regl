@@ -4,7 +4,7 @@ const glsl = x => x[0];
 
 function tree (regl)
 {
-    const count = 32*32;
+    const count = 12*12;
     const range = 20.;
     const quads = quad({
         position: Array(count).fill().map(function (item, index) {
@@ -37,17 +37,19 @@ function tree (regl)
         vec3 curve(float t)
         {
             float id = ceil(quantity.y/8.);
-            vec2 xz = (hash21(id)*2.-1.)*20.;
-            vec3 p = vec3(xz.x, 0, xz.y);
+            // vec2 xz = (hash21(id)*2.-1.)*20.;
+            float angle = hash11(id)*6.28;
+            float radius = pow(hash11(id+457.), 0.5) * 20.;
+            vec3 p = vec3(cos(angle), 0, sin(angle)) * radius;
             vec3 offset = hash31(quantity.y+357.)*2.-1.;
             offset.xz *= rot(t*3.);
             offset.yx *= rot(t*3.);
             offset.yz *= rot(t*3.);
             float yy = anchor.y*0.5+0.5;
-            float height = 0.5+1.5 * pow(hash11(quantity.y), 2.0);
+            float height = 1.5+4.5 * pow(hash11(quantity.y), 2.0);
             p.y += t * height;
-            p += offset * yy * 0.2;
-            p.xz += yy * sin(length(p.xz) * 0.5 - time + yy*3.);
+            p += offset * yy * 0.5;
+            // p.xz += offset.xz * yy * sin(length(p.xz) * 0.5 - time + yy*3.);
             return p;
         }
 
@@ -56,7 +58,7 @@ function tree (regl)
             vec3 seed = position;
             
             // parameters
-            float size = 0.05;
+            float size = 0.1;
 
             // fade size
             float yy = anchor.y*0.5+0.5;
@@ -84,7 +86,7 @@ function tree (regl)
 
             // color
             vColor = vec3(0.5)+vec3(0.5)*cos(vec3(0,1,3)*(hash11(quantity.y+45.)-anchor.y)*1.5);
-            // vColor *= yy;
+            vColor *= pow(yy,0.5);
         }
         `,
         frag:glsl`
@@ -107,10 +109,10 @@ function tree (regl)
         uniforms: {
             time: regl.prop('time')
         },
-        // cull: {
-        //     enable: true,
-        //     face: 'back'
-        // },
+        cull: {
+            enable: true,
+            face: 'back'
+        },
     })
 }
 

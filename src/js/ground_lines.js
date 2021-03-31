@@ -65,13 +65,13 @@ function ground_lines (regl)
             vec3 z = normalize(n-p);
             vec3 y = -normalize(cross(-normalize(p-eye), z));
             // p = mix(p, n, anchor.x * 0.5 + 0.5);
-            p += anchor.y * y * size;
+            p -= anchor.y * y * size;
 
             // projection
             gl_Position = projection * view * vec4(p, 1);
 
             // color
-            vColor = vec3(0.5)+vec3(0.5)*cos(vec3(0,2,3)*(quantity.x+anchor.x*0.5)*1.5);
+            vColor = vec3(0.5)+vec3(0.5)*cos(vec3(0,2,3)*(quantity.x+anchor.x*0.2)*1.5);
         }
         `,
         frag:glsl`
@@ -94,10 +94,10 @@ function ground_lines (regl)
         uniforms: {
             time: regl.prop('time')
         },
-        // cull: {
-        //     enable: true,
-        //     face: 'back'
-        // },
+        cull: {
+            enable: true,
+            face: 'back'
+        },
     })
 }
 
