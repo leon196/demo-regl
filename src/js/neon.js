@@ -4,7 +4,7 @@ const glsl = x => x[0];
 
 function neon (regl)
 {
-    const count = 40;
+    const count = 20;
     const subdivisions = [100, 1];
     const quads = quad({
         position: Array(count).fill().map(function (item, index) {
@@ -25,15 +25,18 @@ function neon (regl)
         uniform float time;
         varying vec2 uv;
         varying vec3 world;
-        varying float offset;
+        varying vec2 vQuantity;
 
         mat2 rot (in float a) { return mat2(cos(a),-sin(a),sin(a),cos(a)); }
 
         vec3 curve (in vec3 p, in float offset)
         {
-            p.y *= 0.1;
-            p.xz = normalize(p.xz) * (0.5+0.5*length(p.xz));
+            // p.y *= 0.1;
+            p.y += 2.0;
+            p.xz = normalize(p.xz) * (0.8+0.2*length(p.xz));
             float angle = quantity.x+anchor.x*3.+offset;
+            float dir = mod(quantity.y, 2.0) < 0.5 ? 1.0 : -1.0;
+            angle *= dir;
             // p.xy *= rot(angle);
             p.xz *= rot(angle);
             float lod = 1.5;
@@ -43,36 +46,37 @@ function neon (regl)
         }
 
         void main() {
-            float thin = 0.01;
+            float thin = 0.1;
             vec3 p = curve(position, 0.0);
-            vec3 n = curve(position, 0.01);
-            vec3 z = normalize(n-p);
-            vec3 y = -normalize(cross(-normalize(p-eye), z));
-            p += y * anchor.y * thin;
-            // p.y += anchor.y * thin;
+            // vec3 n = curve(position, 0.01);
+            // vec3 z = normalize(n-p);
+            // vec3 y = -normalize(cross(-normalize(p-eye), z));
+            // p += y * anchor.y * thin;
+            p.y += anchor.y * thin;
+            // p.xz += normalize(p.xz) * anchor.y * thin;
             gl_Position = projection * view * vec4(p, 1);
             uv = anchor * 0.5 + 0.5;
             world = p;
-            offset = quantity.x;
+            vQuantity = quantity;
         }
         `,
         frag:glsl`
         precision mediump float;
-        varying float offset;
+        varying vec2 vQuantity;
         varying vec2 uv;
         varying vec3 world;
         uniform vec3 eye;
         uniform float time;
         void main() {
-            if (sin(time-(uv.x+offset)*6.28) < 0.0) discard;
+            if (sin(time-(uv.x+vQuantity.x)*6.28) < 0.0) discard;
             // float d = length(eye-world);
             // d = smoothstep(6.0, 2.0, d);
             // gl_FragColor = vec4(vec3(d), 1);
-            // float d = abs(uv.y*2.-1.);
-            // float neon = (1.-d)*0.1/d;
+            float d = abs(uv.y*2.-1.);
+            float neon = (1.-d)*0.1/d;
             // vec3 tint = vec3(1, 0.772, 0.360);
             vec3 tint = vec3(0.5)+vec3(0.5)*cos(vec3(1,2,3)*uv.x*2.);
-            gl_FragColor = vec4(tint,1.);
+            gl_FragColor = vec4(tint, 1);
         }
         `,
         // depth: {
@@ -81,14 +85,14 @@ function neon (regl)
         // blend: {
         //     enable: true,
         //     func: {
-        //         srcRGB: 'one',
-        //         srcAlpha: 1,
-        //         dstRGB: 'one',
-        //         dstAlpha: 1
-        //         // srcRGB: 'src alpha',
+        //         // srcRGB: 'one',
         //         // srcAlpha: 1,
-        //         // dstRGB: 'one minus src alpha',
+        //         // dstRGB: 'one',
         //         // dstAlpha: 1
+        //         srcRGB: 'src alpha',
+        //         srcAlpha: 1,
+        //         dstRGB: 'one minus src alpha',
+        //         dstAlpha: 1
         //     },
         //     equation: {
         //     rgb: 'add',

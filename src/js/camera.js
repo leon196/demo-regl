@@ -60,8 +60,12 @@ function createCamera (regl, props) {
   }
 
   function updateCamera (position, target) {
-    var center = target || cameraState.center
-    var eye = position || cameraState.eye
+
+    cameraState.eye = position
+    cameraState.center = target
+    
+    var center = cameraState.center
+    var eye = cameraState.eye
     var up = cameraState.up
 
     // console.log(eye);
@@ -102,7 +106,10 @@ function createCamera (regl, props) {
           Math.PI / 4.0,
           viewportWidth / viewportHeight,
           0.01,
-          1000.0)
+          100.0)
+      },
+      eye: function() {
+        return cameraState.eye
       }
     }),
     uniforms: Object.keys(cameraState).reduce(function (uniforms, name) {

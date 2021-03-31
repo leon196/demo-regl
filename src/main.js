@@ -1,9 +1,11 @@
 const regl = require('regl')()
 const BlenderWebSocket = require('./js/lib/BlenderWebSocket')
 const BlenderHTML5Animations = require('./js/lib/blender-html5-animations.min')
-const animationData = require('./blend/animation.json')
+const animationData = require('../blend/animation.json')
 const neon = require('./js/neon')(regl)
+const ground = require('./js/ground')(regl)
 const axis = require('./js/axis')(regl)
+const grid = require('./js/grid')(regl)
 const camera = require('./js/camera')(regl, {
     center: [0,0,0],
     distance: 4
@@ -39,7 +41,8 @@ regl.frame(function () {
     
     camera(cam.position, cam.target, () => {
         neon({ time: regl.now() })
-        axis()
+        // axis()
+        // grid({ time: regl.now() })
+        ground({ time: regl.now() })
     })
-    // console.log(position);
 })
