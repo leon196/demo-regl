@@ -8,9 +8,11 @@ function ground_lines (regl)
     const range = 20.;
     const quads = quad({
         position: Array(count).fill().map(function (item, index) {
-            const x = Math.random()*2.-1.;
+            const a = Math.random()*6.28;
+            const r = Math.pow(Math.random(), 0.5);
+            const x = Math.cos(a)*r;
+            const z = Math.sin(a)*r;
             const y = Math.random();
-            const z = Math.random()*2.-1.;
             return [x*range, y, z*range]
         }).flat()
     })
@@ -40,18 +42,13 @@ function ground_lines (regl)
             float len = 2.0 * pow(hash11(quantity.y), 2.0);
 
             // position
-            vec2 xz = (hash21(quantity.y)*2.-1.)*20.;
-            vec3 p = vec3(xz.x, 0, xz.y);
+            // vec2 xz = (hash21(quantity.y)*2.-1.)*20.;
+            vec3 p = vec3(position.x, 0, position.z);
 
-            vec2 nxz = xz + (hash21(quantity.y+375.)*2.-1.) * len;
+            vec2 nxz = p.xz + (hash21(quantity.y+375.)*2.-1.) * len;
             vec3 n = vec3(nxz.x, 0, nxz.y);
 
-
             // orientation
-            // vec3 z = normalize(p-eye);
-            // vec3 x = normalize(cross(z, vec3(0,1,0)));
-            // vec3 y = normalize(cross(x, z));
-            // vec2 v = anchor * rot(quantity.x*6.28);
             vec3 z = normalize(n-p);
             vec3 y = -normalize(cross(-normalize(p-eye), z));
             p = mix(p, n, anchor.x * 0.5 + 0.5);
