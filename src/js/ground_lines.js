@@ -71,6 +71,7 @@ function ground_lines (regl)
             gl_Position = projection * view * vec4(p, 1);
 
             // color
+            // vColor = vec3(1);
             vColor = vec3(0.5)+vec3(0.5)*cos(vec3(0,2,3)*(quantity.x+anchor.x*0.2)*1.5);
         }
         `,

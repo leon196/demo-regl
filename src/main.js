@@ -8,6 +8,8 @@ const neon = require('./js/neon')(regl)
 const ground = require('./js/ground')(regl)
 const ground_lines = require('./js/ground_lines')(regl)
 const tree = require('./js/tree')(regl)
+const sdfcolor = require('./js/sdf-color')(regl)
+const sdfpoint = require('./js/sdf-point')(regl)
 const dust = require('./js/dust')(regl)
 const axis = require('./js/axis')(regl)
 const grid = require('./js/grid')(regl)
@@ -44,8 +46,13 @@ const postprocess = regl({
   precision mediump float;
   varying vec2 uv;
   uniform sampler2D tex;
+  uniform vec2 resolution;
   void main() {
-    gl_FragColor = texture2D(tex, uv);
+    // vec3 edge = smoothstep(0.0, 1.0, edge(tex, uv, resolution/4.).rgb);
+    vec3 color = texture2D(tex, uv).rgb;
+    // color = smoothstep(0.3,0.6,color);
+    // color -= edge;
+    gl_FragColor = vec4(color, 1.0);
     // gl_FragColor.rgb = 1.-gl_FragColor.rgb;
   }`,
 
@@ -54,6 +61,7 @@ const postprocess = regl({
   },
   uniforms: {
     tex: ({count}) => fbo,
+    resolution: ({viewportWidth, viewportHeight}) => [viewportWidth, viewportHeight],
   },
   depth: { enable: false },
   count: 3
@@ -84,23 +92,32 @@ regl.frame(({deltaTime, viewportWidth, viewportHeight}) => {
 
     // var position = animations['CameraAction'].paths['location'].evaluate(elapsed);
 
-    fbo.resize(viewportWidth, viewportHeight)
+    fbo.resize(64,64)
     
+    // drawScene({}, () => {
+    //     regl.clear({
+    //         color: [0, 0, 0, 255],
+    //         depth: 1
+    //     })
+    //     camera(cam.position, cam.target, () => {
+    //         neon({ time: regl.now() })
+    //         // axis()
+    //         // grid({ time: regl.now() })
+    //         ground({ time: regl.now() })
+    //         ground_lines({ time: regl.now() })
+    //         tree({ time: regl.now() })
+    //         // dust({ time: regl.now() })
+    //     })
+    // })
+
     drawScene({}, () => {
-        regl.clear({
-            color: [0, 0, 0, 255],
-            depth: 1
-        })
+        regl.clear({ color: [0, 0, 0, 255] })
         camera(cam.position, cam.target, () => {
-            neon({ time: regl.now() })
-            // axis()
-            // grid({ time: regl.now() })
-            ground({ time: regl.now() })
-            ground_lines({ time: regl.now() })
-            tree({ time: regl.now() })
-            // dust({ time: regl.now() })
+            sdfcolor();
         })
     })
-
-    postprocess();
+    camera(cam.position, cam.target, () => {
+        sdfpoint({sdfcolor: fbo });
+    })
+    // postprocess();
 })

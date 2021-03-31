@@ -85,8 +85,9 @@ function tree (regl)
             gl_Position = projection * view * vec4(p, 1);
 
             // color
+            // vColor = vec3(1);
             vColor = vec3(0.5)+vec3(0.5)*cos(vec3(0,1,3)*(hash11(quantity.y+45.)-anchor.y)*1.5);
-            vColor *= pow(yy,0.5);
+            // vColor *= pow(yy,0.5);
         }
         `,
         frag:glsl`
