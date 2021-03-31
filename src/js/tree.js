@@ -2,7 +2,7 @@
 const quad = require('./quad')
 const glsl = x => x[0];
 
-function ground_lines (regl)
+function tree (regl)
 {
     const count = 32*32;
     const range = 20.;
@@ -15,7 +15,7 @@ function ground_lines (regl)
             const y = Math.random();
             return [x*range, y, z*range]
         }).flat()
-    }, [10, 1])
+    }, [1, 20])
 
     return regl({
         vert:glsl`
@@ -34,44 +34,57 @@ function ground_lines (regl)
         vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
         vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
 
-        vec3 curve (float t)
+        vec3 curve(float t)
         {
-            vec3 p = vec3(position.x, 0, position.z);
-            vec2 offset = hash21(quantity.y+74.)*2.-1.;
-            offset *= rot(t+time);
-            p.xz += offset * (0.5+2.*pow(hash11(quantity.y+354.), 10.));
+            float id = ceil(quantity.y/8.);
+            vec2 xz = (hash21(id)*2.-1.)*20.;
+            vec3 p = vec3(xz.x, 0, xz.y);
+            vec3 offset = hash31(quantity.y+357.)*2.-1.;
+            offset.xz *= rot(t*3.);
+            offset.yx *= rot(t*3.);
+            offset.yz *= rot(t*3.);
+            float yy = anchor.y*0.5+0.5;
+            float height = 0.5+1.5 * pow(hash11(quantity.y), 2.0);
+            p.y += t * height;
+            p += offset * yy * 0.2;
+            p.xz += yy * sin(length(p.xz) * 0.5 - time + yy*3.);
             return p;
         }
 
-        void main() {
+        void main()
+        {
             vec3 seed = position;
             
-            // size
-            float size = 0.02;
-            float len = 0.01+0.1 * pow(hash11(quantity.y), 2.0);
+            // parameters
+            float size = 0.05;
 
-            // size *= sin((anchor.x*0.5+0.5)*3.14);
+            // fade size
+            float yy = anchor.y*0.5+0.5;
+            size *= smoothstep(1.5, 0.0, yy);
 
             // position
-            // vec2 xz = (hash21(quantity.y)*2.-1.)*20.;
-            // vec3 p = vec3(position.x, 0, position.z);
-            vec3 p = curve(anchor.x);
-            vec3 n = curve(anchor.x+len);
+            vec3 p = curve(yy);
+            vec3 n = curve(yy+0.1);
+            // float id = ceil(quantity.y/4.);
+            // vec2 xz = (hash21(id)*2.-1.)*20.;
+            // vec3 p = vec3(xz.x, 0, xz.y);
 
-            // vec2 nxz = p.xz + (hash21(quantity.y+375.)*2.-1.) * len;
-            // vec3 n = vec3(nxz.x, 0, nxz.y);
+            // vec2 nxz = p.xz + (hash21(quantity.y+375.)*2.-1.);
+            // vec3 n = vec3(nxz.x, height, nxz.y);
+            // n.x += sin(anchor.y * 4. + quantity.x * 6.28) * yy * spread;
 
             // orientation
             vec3 z = normalize(n-p);
             vec3 y = -normalize(cross(-normalize(p-eye), z));
-            // p = mix(p, n, anchor.x * 0.5 + 0.5);
-            p += anchor.y * y * size;
+            p = mix(p, n, anchor.y * 0.5 + 0.5);
+            p += anchor.x * y * size;
 
             // projection
             gl_Position = projection * view * vec4(p, 1);
 
             // color
-            vColor = vec3(0.5)+vec3(0.5)*cos(vec3(0,2,3)*(quantity.x+anchor.x*0.5)*1.5);
+            vColor = vec3(0.5)+vec3(0.5)*cos(vec3(0,1,3)*(hash11(quantity.y+45.)-anchor.y)*1.5);
+            // vColor *= yy;
         }
         `,
         frag:glsl`
@@ -101,4 +114,4 @@ function ground_lines (regl)
     })
 }
 
-module.exports = ground_lines;
+module.exports = tree;

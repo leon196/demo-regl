@@ -13,7 +13,7 @@ function ground (regl)
             const x = Math.cos(a)*r;
             const z = Math.sin(a)*r;
             const y = Math.random();
-            return [x*range, y, z*range]
+            return [x*range, y-1., z*range]
         }).flat()
     })
 
@@ -33,20 +33,28 @@ function ground (regl)
 
         // Dave Hoskins https://www.shadertoy.com/view/4djSRW
         float hash11(float p) { p = fract(p * .1031); p *= p + 33.33; p *= p + p; return fract(p); }
+        vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
 
         void main()
         {
             // size
-            float size = 0.1 + 0.2 * pow(hash11(quantity.y), 10.0);
+            float size = 0.1 + 0.4 * pow(hash11(quantity.y+145.), 10.0);
 
             // distribution
             vec3 seed = position;
             vec3 p = position;
 
+            float anim = fract(time * 0.1 + hash11(quantity.y+37.));
+            vec2 offset = hash21(quantity.y+74.)*2.-1.;
+            offset *= rot(anim*2.);
+            p.xz += offset * anim;
+
+            size *= sin(anim*6.28);
+
             // orientation
             vec3 z = vec3(0,1,0);
-            z.yx *= rot((quantity.x*2.-1.)*0.8);
-            z.xz *= rot((quantity.x*2.-1.)*0.8);
+            z.yx *= rot((quantity.x*2.-1.)*0.1);
+            z.xz *= rot((quantity.x*2.-1.)*0.1);
             vec3 x = normalize(cross(z, vec3(0,1,0)));
             vec3 y = normalize(cross(x, z));
             vec2 v = anchor * rot(quantity.x*6.28);
@@ -58,7 +66,7 @@ function ground (regl)
             // varyings
             vUV = anchor;
             vShape = floor(hash11(quantity.y+654.)*3.);
-            vColor = 1.-vec3(0.75)*cos(vec3(0.5,1,2)*quantity.x*1.5);
+            vColor = vec3(0.5)+vec3(0.5)*cos(vec3(4,2,0)*(quantity.x+anchor.y*3.)*1.5);
         }
         `,
         frag:glsl`
