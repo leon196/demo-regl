@@ -1,4 +1,6 @@
-const regl = require('regl')()
+const regl = require('regl')({
+  extensions: 'OES_texture_float'
+})
 const glsl = x => x[0];
 
 const BlenderWebSocket = require('./js/lib/BlenderWebSocket')
@@ -8,8 +10,7 @@ const neon = require('./js/neon')(regl)
 const ground = require('./js/ground')(regl)
 const ground_lines = require('./js/ground_lines')(regl)
 const tree = require('./js/tree')(regl)
-const sdfcolor = require('./js/sdf-color')(regl)
-const sdfpoint = require('./js/sdf-point')(regl)
+const sdf = require('./js/sdf')(regl)
 const dust = require('./js/dust')(regl)
 const axis = require('./js/axis')(regl)
 const grid = require('./js/grid')(regl)
@@ -18,18 +19,27 @@ const camera = require('./js/camera')(regl, {
     distance: 4
 })
 
-const fbo = regl.framebuffer({
-  color: regl.texture({
-    width: 1,
-    height: 1,
-    wrap: 'clamp'
-  }),
-  depth: true
+const dimension = 128;
+const sdfpoint = require('./js/sdf-point')(regl, dimension)
+
+const fboColor = regl.framebuffer({
+    color: regl.texture({
+        width: dimension,
+        height: dimension,
+        wrap: 'clamp'
+    }),
+    depthStencil: false
 })
 
-const drawScene = regl({
-  framebuffer: fbo
+const fboPosition = regl.framebuffer({
+    radius: dimension,
+    colorType: 'float',
+    depthStencil: false
 })
+
+// const drawColor = regl({
+//   framebuffer: fboColor
+// })
 
 
 const postprocess = regl({
@@ -71,9 +81,11 @@ const postprocess = regl({
 var animations = new BlenderHTML5Animations.ActionLibrary(animationData);
 
 var elapsed = 0;
-var cam = {
+var anims = {
     position: [0,0,-4],
-    target: [0,0,0]
+    target: [0,0,0],
+    spot: [0,0,0],
+    spotTarget: [0,0,0],
 }
 
 var blenderSocket = new BlenderWebSocket();
@@ -82,17 +94,23 @@ blenderSocket.addListener('frame', function(frame)
     elapsed = frame / 24;
 });
 function xyz2xzy(a) { return [-a[0], a[2], a[1]]; }
+function add(a, b) { return [a[0]+b[0], a[1]+b[1], a[2]+b[2]]; }
 blenderSocket.addListener('data', function(data)
 {
-    cam.position = xyz2xzy(data.Camera.location);
-    cam.target = xyz2xzy(data.CameraTarget.location);
+    if (data.Camera !== undefined) anims.position = xyz2xzy(data.Camera.location);
+    if (data.CameraTarget !== undefined) anims.target = xyz2xzy(data.CameraTarget.location);
+    if (data.Spot !== undefined) anims.spot = xyz2xzy(data.Spot.location);
+    if (data.SpotTarget !== undefined) anims.spotTarget = xyz2xzy(data.SpotTarget.location);
+    // cam.r
+    // console.log(data.Camera);
+    // cam.target = xyz2xzy(data.CameraTarget.location);
 });
 
 regl.frame(({deltaTime, viewportWidth, viewportHeight}) => {
 
-    // var position = animations['CameraAction'].paths['location'].evaluate(elapsed);
+    // var position = anims['CameraAction'].paths['location'].evaluate(elapsed);
 
-    fbo.resize(64,64)
+    // fboColor.resize(64,64)
     
     // drawScene({}, () => {
     //     regl.clear({
@@ -110,14 +128,26 @@ regl.frame(({deltaTime, viewportWidth, viewportHeight}) => {
     //     })
     // })
 
-    drawScene({}, () => {
+    fboColor.use(() => {
         regl.clear({ color: [0, 0, 0, 255] })
-        camera(cam.position, cam.target, () => {
-            sdfcolor();
+        camera(anims, () => {
+            sdf({mode: 0, spot: anims.spot, spotTarget: anims.spotTarget});
         })
     })
-    camera(cam.position, cam.target, () => {
-        sdfpoint({sdfcolor: fbo });
+    fboPosition.use(() => {
+        regl.clear({ color: [0, 0, 0, 255] })
+        camera(anims, () => {
+            sdf({mode: 1, spot: anims.spot, spotTarget: anims.spotTarget});
+        })
+    })
+    camera(anims, () => {
+        regl.clear({ color: [0, 0, 0, 255] })
+        axis()
+        grid({ time: regl.now() })
+        sdfpoint({
+            sdfcolor: fboColor,
+            sdfposition: fboPosition,
+         });
     })
     // postprocess();
 })

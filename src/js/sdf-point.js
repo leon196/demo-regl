@@ -2,9 +2,8 @@
 const quad = require('./quad')
 const glsl = x => x[0];
 
-function sdfpoints (regl)
+function sdfpoints (regl, dimension)
 {
-    const dimension = 64;
     const quads = quad({
         position: Array(dimension*dimension).fill().map(function (item, index) {
             const x = (index % dimension) / dimension;
@@ -22,7 +21,7 @@ function sdfpoints (regl)
         uniform mat4 projection, view;
         uniform vec3 eye;
         uniform float time;
-        uniform sampler2D sdfcolor;
+        uniform sampler2D sdfcolor, sdfposition;
 
         varying vec3 vColor;
         varying vec2 vUV;
@@ -35,14 +34,22 @@ function sdfpoints (regl)
         vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
         vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
 
+        float luminance(vec3 c) { return (c.r+c.g+c.b)/3.; }
+
         void main()
         {
+            // color
+            vColor = texture2D(sdfcolor, position.xy).rgb;
+
+            // position
+            vec3 p = texture2D(sdfposition, position.xy).rgb;
+
             // size
             float size = 0.01 + 0.04 * pow(hash11(quantity.y+145.), 10.0);
 
-            // distribution
-            vec3 seed = position;
-            vec3 p = position;
+            // color fade out
+            size *= smoothstep(0.0, 0.1, luminance(vColor));
+
 
             // orientation
             vec3 z = normalize(eye-p);
@@ -57,7 +64,6 @@ function sdfpoints (regl)
             // varyings
             vUV = anchor;
             vShape = floor(hash11(quantity.y+654.)*3.);
-            vColor = texture2D(sdfcolor, position.xy).rgb;
         }
         `,
         frag:glsl`
@@ -102,7 +108,8 @@ function sdfpoints (regl)
         }),
         uniforms: {
             time: regl.prop('time'),
-            sdfcolor: regl.prop('sdfcolor')
+            sdfcolor: regl.prop('sdfcolor'),
+            sdfposition: regl.prop('sdfposition'),
         },
         cull: {
             enable: true,

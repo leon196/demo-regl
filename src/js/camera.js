@@ -2,6 +2,10 @@ var mouseChange = require('mouse-change')
 var mouseWheel = require('mouse-wheel')
 var identity = require('gl-mat4/identity')
 var perspective = require('gl-mat4/perspective')
+var rotateX = require('gl-mat4/rotateX')
+var rotateY = require('gl-mat4/rotateY')
+var rotateZ = require('gl-mat4/rotateZ')
+var translate = require('gl-mat4/translate')
 var lookAt = require('gl-mat4/lookAt')
 
 module.exports = createCamera
@@ -59,10 +63,10 @@ function createCamera (regl, props) {
     return Math.min(Math.max(x, lo), hi)
   }
 
-  function updateCamera (position, target) {
+  function updateCamera (anims) {
 
-    cameraState.eye = position
-    cameraState.center = target
+    cameraState.eye = anims.position
+    cameraState.center = anims.target;
     
     var center = cameraState.center
     var eye = cameraState.eye
@@ -118,8 +122,8 @@ function createCamera (regl, props) {
     }, {})
   })
 
-  function setupCamera (position, target, block) {
-    updateCamera(position, target)
+  function setupCamera (anims, block) {
+    updateCamera(anims)
     injectContext(block)
   }
 
