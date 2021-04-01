@@ -21,7 +21,7 @@ function sdfpoints (regl, dimension)
         uniform mat4 projection, view;
         uniform vec3 eye;
         uniform float time;
-        uniform sampler2D sdfcolor, sdfposition;
+        uniform sampler2D frameColor, framePosition;
 
         varying vec3 vColor;
         varying vec2 vUV;
@@ -32,17 +32,24 @@ function sdfpoints (regl, dimension)
         // Dave Hoskins https://www.shadertoy.com/view/4djSRW
         float hash11(float p) { p = fract(p * .1031); p *= p + 33.33; p *= p + p; return fract(p); }
         vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
+        vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xx+p3.yz)*p3.zy); }
         vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
 
         float luminance(vec3 c) { return (c.r+c.g+c.b)/3.; }
 
         void main()
         {
+            // uv
+            vec2 uv = position.xy;
+
+            // jitter
+            uv += (hash22(position.xy*200.)*2.0-1.0)*0.01;
+
             // color
-            vColor = texture2D(sdfcolor, position.xy).rgb;
+            vColor = texture2D(frameColor, uv).rgb;
 
             // position
-            vec3 p = texture2D(sdfposition, position.xy).rgb;
+            vec3 p = texture2D(framePosition, uv).rgb;
 
             // size
             float size = 0.01 + 0.04 * pow(hash11(quantity.y+145.), 10.0);
@@ -50,6 +57,9 @@ function sdfpoints (regl, dimension)
             // color fade out
             size *= smoothstep(0.0, 0.1, luminance(vColor));
 
+            // lifetime fade out
+            float lifetime = texture2D(framePosition, uv).a;
+            size *= sin(lifetime*3.14);
 
             // orientation
             vec3 z = normalize(eye-p);
@@ -108,8 +118,8 @@ function sdfpoints (regl, dimension)
         }),
         uniforms: {
             time: regl.prop('time'),
-            sdfcolor: regl.prop('sdfcolor'),
-            sdfposition: regl.prop('sdfposition'),
+            frameColor: regl.prop('frameColor'),
+            framePosition: regl.prop('framePosition'),
         },
         cull: {
             enable: true,

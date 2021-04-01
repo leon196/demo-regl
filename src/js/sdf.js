@@ -26,6 +26,7 @@ function sdf (regl)
         uniform float time;
         uniform int mode;
         uniform vec2 resolution;
+        uniform sampler2D frameColor, framePosition;
 
         varying vec2 uv;
 
@@ -33,6 +34,7 @@ function sdf (regl)
 
         // Dave Hoskins https://www.shadertoy.com/view/4djSRW
         float hash11(float p) { p = fract(p * .1031); p *= p + 33.33; p *= p + p; return fract(p); }
+        float hash12(vec2 p) { vec3 p3  = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
         vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
         vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
 
@@ -47,38 +49,68 @@ function sdf (regl)
         {
             float dist = 100.;
 
-            dist = length(p)-1.0;
+            const int count = 8;
+            float radius = 0.5;
+            float range = 0.8;
+            float falloff = 1.8;
+
+            float a = 1.0;
+            for (int index = 0; index < count; ++index)
+            {
+                p.xz *= rot(1.0/a);
+                p.yz *= rot(1.0/a);
+                p.xz = abs(p.xz) - range*a;
+                dist = min(dist, length(p)-radius*a);
+                a /= falloff;
+            }
 
             return dist;
         }
 
         void main()
         {
-            vec2 viewport = (uv*2.-1.)*vec2(resolution.x/resolution.y,1.0);
-            vec3 ray = look(spot, spotTarget, viewport);
-            vec3 pos = spot;
-            vec3 color = vec3(0);
-            const int count = 30;
-            for (int index = 0; index < count; ++index)
-            {
-                float dist = map(pos);
-                if (dist < 0.001)
-                {
-                    float shade = float(count-index)/float(count);
-                    color = vec3(shade);
-                    break;
-                }
-                pos += ray * dist;
-            }
 
             if (mode == mode_color)
             {
-                gl_FragColor = vec4(color, 1);
+                gl_FragColor = texture2D(frameColor, uv);
             }
             else // if (mode == mode_position)
             {
-                gl_FragColor = vec4(pos, 1);
+                gl_FragColor = texture2D(framePosition, uv);
             }
+
+            float lifetime = texture2D(framePosition, uv).a;
+            if (lifetime > 1.0)
+            {
+                vec2 viewport = (uv*2.-1.)*vec2(resolution.x/resolution.y,1.0);
+                vec3 ray = look(spot, spotTarget, viewport);
+                vec3 pos = spot;
+                vec3 color = vec3(0);
+                const int count = 30;
+                for (int index = 0; index < count; ++index)
+                {
+                    float dist = map(pos);
+                    if (dist < 0.001)
+                    {
+                        float shade = float(count-index)/float(count);
+                        color = vec3(shade);
+                        break;
+                    }
+                    pos += ray * dist;
+                }
+
+                if (mode == mode_color)
+                {
+                    gl_FragColor.rgb = color;
+                }
+                else // if (mode == mode_position)
+                {
+                    gl_FragColor.rgb = pos;
+                }
+                lifetime = 0.0;
+            }
+            lifetime += 0.01 + 0.01 * hash12(uv*100.);
+            gl_FragColor.a = lifetime;
         }
         `,
         attributes: {
@@ -89,6 +121,8 @@ function sdf (regl)
             mode: regl.prop('mode'),
             spot: regl.prop('spot'),
             spotTarget: regl.prop('spotTarget'),
+            frameColor: regl.prop('frameColor'),
+            framePosition: regl.prop('framePosition'),
         },
         depth: { enable: false },
         count: 3
