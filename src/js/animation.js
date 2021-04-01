@@ -28,7 +28,7 @@ blenderSocket.addListener('data', function(data)
     if (data.Spot !== undefined) anims.spot = xyz2xzy(data.Spot.location);
     if (data.SpotTarget !== undefined) anims.spotTarget = xyz2xzy(data.SpotTarget.location);
     // cam.r
-    // console.log(data.Camera);
+    // console.log(data);
     // cam.target = xyz2xzy(data.CameraTarget.location);
 });
 

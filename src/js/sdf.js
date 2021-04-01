@@ -20,13 +20,14 @@ function sdf (regl)
 
         const int mode_color = 0;
         const int mode_position = 1;
+        const int mode_normal = 2;
 
         uniform vec3 eye;
         uniform vec3 spot, spotTarget;
         uniform float time;
         uniform int mode;
         uniform vec2 resolution;
-        uniform sampler2D frameColor, framePosition;
+        uniform sampler2D frameColor, framePosition, frameNormal;
 
         varying vec2 uv;
 
@@ -67,22 +68,29 @@ function sdf (regl)
             return dist;
         }
 
+        // NuSan https://www.shadertoy.com/view/3sBGzV
+        vec3 getNormal(vec3 p) {
+            vec2 off=vec2(0.001,0);
+            return normalize(map(p)-vec3(map(p-off.xyy), map(p-off.yxy), map(p-off.yyx)));
+        }
+
         void main()
         {
-
+            // previous state
             if (mode == mode_color)
-            {
                 gl_FragColor = texture2D(frameColor, uv);
-            }
-            else // if (mode == mode_position)
-            {
+            else if (mode == mode_position)
                 gl_FragColor = texture2D(framePosition, uv);
-            }
+            else // if (mode == mode_normal)
+                gl_FragColor = texture2D(frameNormal, uv);
 
+            // spawn
             float lifetime = texture2D(framePosition, uv).a;
             if (lifetime > 1.0)
             {
-                vec2 viewport = (uv*2.-1.)*vec2(resolution.x/resolution.y,1.0);
+                gl_FragColor.rgb = vec3(0);
+                // raymarching
+                vec2 viewport = (uv*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
                 vec3 ray = look(spot, spotTarget, viewport);
                 vec3 pos = spot;
                 vec3 color = vec3(0);
@@ -92,20 +100,23 @@ function sdf (regl)
                     float dist = map(pos);
                     if (dist < 0.001)
                     {
-                        float shade = float(count-index)/float(count);
-                        color = vec3(shade);
+                        if (mode == mode_color)
+                        {
+                            float shade = float(count-index)/float(count);
+                            color = vec3(shade);
+                            gl_FragColor.rgb = color;
+                        }
+                        else if (mode == mode_position)
+                        {
+                            gl_FragColor.rgb = pos;
+                        }
+                        else // if (mode == mode_normal)
+                        {
+                            gl_FragColor.rgb = getNormal(pos);
+                        }
                         break;
                     }
                     pos += ray * dist;
-                }
-
-                if (mode == mode_color)
-                {
-                    gl_FragColor.rgb = color;
-                }
-                else // if (mode == mode_position)
-                {
-                    gl_FragColor.rgb = pos;
                 }
                 lifetime = 0.0;
             }
@@ -123,6 +134,7 @@ function sdf (regl)
             spotTarget: regl.prop('spotTarget'),
             frameColor: regl.prop('frameColor'),
             framePosition: regl.prop('framePosition'),
+            frameNormal: regl.prop('frameNormal'),
         },
         depth: { enable: false },
         count: 3
