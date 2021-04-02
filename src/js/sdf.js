@@ -23,7 +23,7 @@ function sdf (regl)
         const int mode_normal = 2;
 
         uniform vec3 eye;
-        uniform vec3 spot, spotTarget;
+        uniform vec3 Spot, SpotTarget, KIF;
         uniform float time;
         uniform int mode;
         uniform vec2 resolution;
@@ -37,6 +37,7 @@ function sdf (regl)
         float hash11(float p) { p = fract(p * .1031); p *= p + 33.33; p *= p + p; return fract(p); }
         float hash12(vec2 p) { vec3 p3  = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
         vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
+        vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xx+p3.yz)*p3.zy); }
         vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
 
         vec3 look (vec3 eye, vec3 target, vec2 anchor) {
@@ -51,9 +52,9 @@ function sdf (regl)
             float dist = 100.;
 
             const int count = 8;
-            float radius = 0.5;
-            float range = 0.8;
-            float falloff = 1.8;
+            float radius = KIF.x;
+            float range = KIF.y;
+            float falloff = KIF.z;
 
             float a = 1.0;
             for (int index = 0; index < count; ++index)
@@ -64,6 +65,8 @@ function sdf (regl)
                 dist = min(dist, length(p)-radius*a);
                 a /= falloff;
             }
+
+            dist = abs(dist)-0.01;
 
             return dist;
         }
@@ -76,6 +79,7 @@ function sdf (regl)
 
         void main()
         {
+
             // previous state
             if (mode == mode_color)
                 gl_FragColor = texture2D(frameColor, uv);
@@ -90,9 +94,11 @@ function sdf (regl)
             {
                 gl_FragColor.rgb = vec3(0);
                 // raymarching
-                vec2 viewport = (uv*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
-                vec3 ray = look(spot, spotTarget, viewport);
-                vec3 pos = spot;
+                vec2 uvp = uv;
+                // uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.1;
+                vec2 viewport = (uvp*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
+                vec3 ray = look(Spot, SpotTarget, viewport);
+                vec3 pos = Spot;
                 vec3 color = vec3(0);
                 const int count = 30;
                 for (int index = 0; index < count; ++index)
@@ -130,8 +136,9 @@ function sdf (regl)
         uniforms: {
             resolution: ({viewportWidth, viewportHeight}) => [viewportWidth, viewportHeight],
             mode: regl.prop('mode'),
-            spot: regl.prop('spot'),
-            spotTarget: regl.prop('spotTarget'),
+            Spot: regl.prop('Spot'),
+            SpotTarget: regl.prop('SpotTarget'),
+            KIF: regl.prop('KIF'),
             frameColor: regl.prop('frameColor'),
             framePosition: regl.prop('framePosition'),
             frameNormal: regl.prop('frameNormal'),

@@ -19,7 +19,7 @@ function sdfpoints (regl, dimension)
         attribute vec2 anchor, quantity;
         
         uniform mat4 projection, view;
-        uniform vec3 eye;
+        uniform vec3 Points;
         uniform float time;
         uniform sampler2D frameColor, framePosition, frameNormal;
 
@@ -51,7 +51,7 @@ function sdfpoints (regl, dimension)
             vec3 n = texture2D(frameNormal, uv).rgb;
 
             // size
-            float size = 0.04 + 0.04 * pow(hash11(quantity.y+145.), 10.0);
+            float size = Points.x + Points.y * pow(hash11(quantity.y+145.), 10.0);
 
             // color fade out
             size *= smoothstep(0.0, 0.1, luminance(vColor));
@@ -117,6 +117,7 @@ function sdfpoints (regl, dimension)
         }),
         uniforms: {
             time: regl.prop('time'),
+            Points: regl.prop('Points'),
             frameColor: regl.prop('frameColor'),
             framePosition: regl.prop('framePosition'),
             frameNormal: regl.prop('frameNormal'),

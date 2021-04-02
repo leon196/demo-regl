@@ -154,6 +154,180 @@ function perspective(out, fovy, aspect, near, far) {
     return out;
 };
 },{}],5:[function(require,module,exports){
+module.exports = rotateX;
+
+/**
+ * Rotates a matrix by the given angle around the X axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+function rotateX(out, a, rad) {
+    var s = Math.sin(rad),
+        c = Math.cos(rad),
+        a10 = a[4],
+        a11 = a[5],
+        a12 = a[6],
+        a13 = a[7],
+        a20 = a[8],
+        a21 = a[9],
+        a22 = a[10],
+        a23 = a[11];
+
+    if (a !== out) { // If the source and destination differ, copy the unchanged rows
+        out[0]  = a[0];
+        out[1]  = a[1];
+        out[2]  = a[2];
+        out[3]  = a[3];
+        out[12] = a[12];
+        out[13] = a[13];
+        out[14] = a[14];
+        out[15] = a[15];
+    }
+
+    // Perform axis-specific matrix multiplication
+    out[4] = a10 * c + a20 * s;
+    out[5] = a11 * c + a21 * s;
+    out[6] = a12 * c + a22 * s;
+    out[7] = a13 * c + a23 * s;
+    out[8] = a20 * c - a10 * s;
+    out[9] = a21 * c - a11 * s;
+    out[10] = a22 * c - a12 * s;
+    out[11] = a23 * c - a13 * s;
+    return out;
+};
+},{}],6:[function(require,module,exports){
+module.exports = rotateY;
+
+/**
+ * Rotates a matrix by the given angle around the Y axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+function rotateY(out, a, rad) {
+    var s = Math.sin(rad),
+        c = Math.cos(rad),
+        a00 = a[0],
+        a01 = a[1],
+        a02 = a[2],
+        a03 = a[3],
+        a20 = a[8],
+        a21 = a[9],
+        a22 = a[10],
+        a23 = a[11];
+
+    if (a !== out) { // If the source and destination differ, copy the unchanged rows
+        out[4]  = a[4];
+        out[5]  = a[5];
+        out[6]  = a[6];
+        out[7]  = a[7];
+        out[12] = a[12];
+        out[13] = a[13];
+        out[14] = a[14];
+        out[15] = a[15];
+    }
+
+    // Perform axis-specific matrix multiplication
+    out[0] = a00 * c - a20 * s;
+    out[1] = a01 * c - a21 * s;
+    out[2] = a02 * c - a22 * s;
+    out[3] = a03 * c - a23 * s;
+    out[8] = a00 * s + a20 * c;
+    out[9] = a01 * s + a21 * c;
+    out[10] = a02 * s + a22 * c;
+    out[11] = a03 * s + a23 * c;
+    return out;
+};
+},{}],7:[function(require,module,exports){
+module.exports = rotateZ;
+
+/**
+ * Rotates a matrix by the given angle around the Z axis
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to rotate
+ * @param {Number} rad the angle to rotate the matrix by
+ * @returns {mat4} out
+ */
+function rotateZ(out, a, rad) {
+    var s = Math.sin(rad),
+        c = Math.cos(rad),
+        a00 = a[0],
+        a01 = a[1],
+        a02 = a[2],
+        a03 = a[3],
+        a10 = a[4],
+        a11 = a[5],
+        a12 = a[6],
+        a13 = a[7];
+
+    if (a !== out) { // If the source and destination differ, copy the unchanged last row
+        out[8]  = a[8];
+        out[9]  = a[9];
+        out[10] = a[10];
+        out[11] = a[11];
+        out[12] = a[12];
+        out[13] = a[13];
+        out[14] = a[14];
+        out[15] = a[15];
+    }
+
+    // Perform axis-specific matrix multiplication
+    out[0] = a00 * c + a10 * s;
+    out[1] = a01 * c + a11 * s;
+    out[2] = a02 * c + a12 * s;
+    out[3] = a03 * c + a13 * s;
+    out[4] = a10 * c - a00 * s;
+    out[5] = a11 * c - a01 * s;
+    out[6] = a12 * c - a02 * s;
+    out[7] = a13 * c - a03 * s;
+    return out;
+};
+},{}],8:[function(require,module,exports){
+module.exports = translate;
+
+/**
+ * Translate a mat4 by the given vector
+ *
+ * @param {mat4} out the receiving matrix
+ * @param {mat4} a the matrix to translate
+ * @param {vec3} v vector to translate by
+ * @returns {mat4} out
+ */
+function translate(out, a, v) {
+    var x = v[0], y = v[1], z = v[2],
+        a00, a01, a02, a03,
+        a10, a11, a12, a13,
+        a20, a21, a22, a23;
+
+    if (a === out) {
+        out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
+        out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
+        out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
+        out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
+    } else {
+        a00 = a[0]; a01 = a[1]; a02 = a[2]; a03 = a[3];
+        a10 = a[4]; a11 = a[5]; a12 = a[6]; a13 = a[7];
+        a20 = a[8]; a21 = a[9]; a22 = a[10]; a23 = a[11];
+
+        out[0] = a00; out[1] = a01; out[2] = a02; out[3] = a03;
+        out[4] = a10; out[5] = a11; out[6] = a12; out[7] = a13;
+        out[8] = a20; out[9] = a21; out[10] = a22; out[11] = a23;
+
+        out[12] = a00 * x + a10 * y + a20 * z + a[12];
+        out[13] = a01 * x + a11 * y + a21 * z + a[13];
+        out[14] = a02 * x + a12 * y + a22 * z + a[14];
+        out[15] = a03 * x + a13 * y + a23 * z + a[15];
+    }
+
+    return out;
+};
+},{}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -221,7 +395,7 @@ if (!Math.hypot) Math.hypot = function () {
 
   return Math.sqrt(y);
 };
-},{}],6:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -274,7 +448,7 @@ exports.vec4 = vec4;
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-},{"./common.js":5,"./mat2.js":7,"./mat2d.js":8,"./mat3.js":9,"./mat4.js":10,"./quat.js":11,"./quat2.js":12,"./vec2.js":13,"./vec3.js":14,"./vec4.js":15}],7:[function(require,module,exports){
+},{"./common.js":9,"./mat2.js":11,"./mat2d.js":12,"./mat3.js":13,"./mat4.js":14,"./quat.js":15,"./quat2.js":16,"./vec2.js":17,"./vec3.js":18,"./vec4.js":19}],11:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -770,7 +944,7 @@ var mul = multiply;
 exports.mul = mul;
 var sub = subtract;
 exports.sub = sub;
-},{"./common.js":5}],8:[function(require,module,exports){
+},{"./common.js":9}],12:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -1318,7 +1492,7 @@ var mul = multiply;
 exports.mul = mul;
 var sub = subtract;
 exports.sub = sub;
-},{"./common.js":5}],9:[function(require,module,exports){
+},{"./common.js":9}],13:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -2172,7 +2346,7 @@ var mul = multiply;
 exports.mul = mul;
 var sub = subtract;
 exports.sub = sub;
-},{"./common.js":5}],10:[function(require,module,exports){
+},{"./common.js":9}],14:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -4092,7 +4266,7 @@ var mul = multiply;
 exports.mul = mul;
 var sub = subtract;
 exports.sub = sub;
-},{"./common.js":5}],11:[function(require,module,exports){
+},{"./common.js":9}],15:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -4884,7 +5058,7 @@ var setAxes = function () {
 }();
 
 exports.setAxes = setAxes;
-},{"./common.js":5,"./mat3.js":9,"./vec3.js":14,"./vec4.js":15}],12:[function(require,module,exports){
+},{"./common.js":9,"./mat3.js":13,"./vec3.js":18,"./vec4.js":19}],16:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -5809,7 +5983,7 @@ function equals(a, b) {
       b7 = b[7];
   return Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) && Math.abs(a4 - b4) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) && Math.abs(a5 - b5) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5)) && Math.abs(a6 - b6) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a6), Math.abs(b6)) && Math.abs(a7 - b7) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a7), Math.abs(b7));
 }
-},{"./common.js":5,"./mat4.js":10,"./quat.js":11}],13:[function(require,module,exports){
+},{"./common.js":9,"./mat4.js":14,"./quat.js":15}],17:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -6531,7 +6705,7 @@ var forEach = function () {
 }();
 
 exports.forEach = forEach;
-},{"./common.js":5}],14:[function(require,module,exports){
+},{"./common.js":9}],18:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -7422,7 +7596,7 @@ var forEach = function () {
 }();
 
 exports.forEach = forEach;
-},{"./common.js":5}],15:[function(require,module,exports){
+},{"./common.js":9}],19:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -8175,7 +8349,7 @@ var forEach = function () {
 }();
 
 exports.forEach = forEach;
-},{"./common.js":5}],16:[function(require,module,exports){
+},{"./common.js":9}],20:[function(require,module,exports){
 'use strict'
 
 module.exports = mouseListen
@@ -8382,7 +8556,7 @@ function mouseListen (element, callback) {
   return result
 }
 
-},{"mouse-event":17}],17:[function(require,module,exports){
+},{"mouse-event":21}],21:[function(require,module,exports){
 'use strict'
 
 function mouseButtons(ev) {
@@ -8444,7 +8618,7 @@ function mouseRelativeY(ev) {
 }
 exports.y = mouseRelativeY
 
-},{}],18:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict'
 
 var toPX = require('to-px')
@@ -8486,7 +8660,7 @@ function mouseWheelListen(element, callback, noScroll) {
   return listener
 }
 
-},{"to-px":21}],19:[function(require,module,exports){
+},{"to-px":25}],23:[function(require,module,exports){
 module.exports = function parseUnit(str, out) {
     if (!out)
         out = [ 0, '' ]
@@ -8497,7 +8671,7 @@ module.exports = function parseUnit(str, out) {
     out[1] = str.match(/[\d.\-\+]*\s*(.*)/)[1] || ''
     return out
 }
-},{}],20:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 (function(Z,ka){"object"===typeof exports&&"undefined"!==typeof module?module.exports=ka():"function"===typeof define&&define.amd?define(ka):Z.createREGL=ka()})(this,function(){function Z(a,b){this.id=Db++;this.type=a;this.data=b}function ka(a){if(0===a.length)return[];var b=a.charAt(0),c=a.charAt(a.length-1);if(1<a.length&&b===c&&('"'===b||"'"===b))return['"'+a.substr(1,a.length-2).replace(/\\/g,"\\\\").replace(/"/g,'\\"')+'"'];if(b=/\[(false|true|null|\d+|'[^']*'|"[^"]*")\]/.exec(a))return ka(a.substr(0,
 b.index)).concat(ka(b[1])).concat(ka(a.substr(b.index+b[0].length)));b=a.split(".");if(1===b.length)return['"'+a.replace(/\\/g,"\\\\").replace(/"/g,'\\"')+'"'];a=[];for(c=0;c<b.length;++c)a=a.concat(ka(b[c]));return a}function cb(a){return"["+ka(a).join("][")+"]"}function db(a,b){if("function"===typeof a)return new Z(0,a);if("number"===typeof a||"boolean"===typeof a)return new Z(5,a);if(Array.isArray(a))return new Z(6,a.map(function(a,e){return db(a,b+"["+e+"]")}));if(a instanceof Z)return a}function Eb(){var a=
 {"":0},b=[""];return{id:function(c){var e=a[c];if(e)return e;e=a[c]=b.length;b.push(c);return e},str:function(a){return b[a]}}}function Fb(a,b,c){function e(){var b=window.innerWidth,e=window.innerHeight;a!==document.body&&(e=f.getBoundingClientRect(),b=e.right-e.left,e=e.bottom-e.top);f.width=c*b;f.height=c*e}var f=document.createElement("canvas");L(f.style,{border:0,margin:0,padding:0,top:0,left:0,width:"100%",height:"100%"});a.appendChild(f);a===document.body&&(f.style.position="absolute",L(a.style,
@@ -8670,7 +8844,7 @@ C={elements:null,primitive:4,count:-1,offset:0,instances:-1},M=Yb(l,w),y=Jb(l,p,
 vao:K.createVAO,attributes:g,frame:v,on:function(a,b){var c;switch(a){case "frame":return v(b);case "lost":c=R;break;case "restore":c=U;break;case "destroy":c=Z}c.push(b);return{cancel:function(){for(var a=0;a<c.length;++a)if(c[a]===b){c[a]=c[c.length-1];c.pop();break}}}},limits:M,hasExtension:function(a){return 0<=M.extensions.indexOf(a.toLowerCase())},read:r,destroy:function(){E.length=0;e();N&&(N.removeEventListener("webglcontextlost",f),N.removeEventListener("webglcontextrestored",d));F.clear();
 S.clear();O.clear();K.clear();A.clear();T.clear();y.clear();t&&t.clear();Z.forEach(function(a){a()})},_gl:l,_refresh:m,poll:function(){u();t&&t.update()},now:x,stats:p});a.onDone(null,g);return g}});
 
-},{}],21:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict'
 
 var parseUnit = require('parse-unit')
@@ -8746,7 +8920,45 @@ function toPX(str, element) {
   return null
 }
 
-},{"parse-unit":19}],22:[function(require,module,exports){
+},{"parse-unit":23}],26:[function(require,module,exports){
+
+const BlenderWebSocket = require('./lib/BlenderWebSocket')
+const BlenderHTML5Animations = require('./lib/blender-html5-animations.min')
+const animationData = require('../../blend/animation.json')
+
+console.log(animationData);
+
+// console.log(animationData);
+var animations = new BlenderHTML5Animations.ActionLibrary(animationData);
+
+var elapsed = 0;
+var anims = {
+    Camera: [0,0,-4],
+    CameraTarget: [0,0,0],
+    Spot: [0,1,0],
+    SpotTarget: [0,0,0],
+    Points: [0,0,0],
+    KIF: [0,0,0],
+}
+
+var blenderSocket = new BlenderWebSocket();
+blenderSocket.addListener('frame', function(frame)
+{
+    elapsed = frame / 24;
+});
+function xyz2xzy(a) { return [-a[0], a[2], a[1]]; }
+function add(a, b) { return [a[0]+b[0], a[1]+b[1], a[2]+b[2]]; }
+blenderSocket.addListener('data', function(data)
+{
+    Object.keys(data).forEach((key, index) => {
+        if (data[key].location !== undefined) {
+            anims[key] = xyz2xzy(data[key].location);
+        }
+    })
+});
+
+module.exports = anims;
+},{"../../blend/animation.json":1,"./lib/BlenderWebSocket":30,"./lib/blender-html5-animations.min":31}],27:[function(require,module,exports){
 
 const glsl = x => x[0];
 
@@ -8786,11 +8998,15 @@ function axis (regl)
 }
 
 module.exports = axis;
-},{}],23:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var mouseChange = require('mouse-change')
 var mouseWheel = require('mouse-wheel')
 var identity = require('gl-mat4/identity')
 var perspective = require('gl-mat4/perspective')
+var rotateX = require('gl-mat4/rotateX')
+var rotateY = require('gl-mat4/rotateY')
+var rotateZ = require('gl-mat4/rotateZ')
+var translate = require('gl-mat4/translate')
 var lookAt = require('gl-mat4/lookAt')
 
 module.exports = createCamera
@@ -8848,10 +9064,10 @@ function createCamera (regl, props) {
     return Math.min(Math.max(x, lo), hi)
   }
 
-  function updateCamera (position, target) {
+  function updateCamera (anims) {
 
-    cameraState.eye = position
-    cameraState.center = target
+    cameraState.eye = anims.Camera
+    cameraState.center = anims.CameraTarget;
     
     var center = cameraState.center
     var eye = cameraState.eye
@@ -8907,8 +9123,8 @@ function createCamera (regl, props) {
     }, {})
   })
 
-  function setupCamera (position, target, block) {
-    updateCamera(position, target)
+  function setupCamera (anims, block) {
+    updateCamera(anims)
     injectContext(block)
   }
 
@@ -8919,7 +9135,7 @@ function createCamera (regl, props) {
   return setupCamera
 }
 
-},{"gl-mat4/identity":2,"gl-mat4/lookAt":3,"gl-mat4/perspective":4,"mouse-change":16,"mouse-wheel":18}],24:[function(require,module,exports){
+},{"gl-mat4/identity":2,"gl-mat4/lookAt":3,"gl-mat4/perspective":4,"gl-mat4/rotateX":5,"gl-mat4/rotateY":6,"gl-mat4/rotateZ":7,"gl-mat4/translate":8,"mouse-change":20,"mouse-wheel":22}],29:[function(require,module,exports){
 
 const glsl = x => x[0];
 
@@ -8973,80 +9189,7 @@ function grid (regl, width, height)
 }
 
 module.exports = grid;
-},{}],25:[function(require,module,exports){
-
-const quad = require('./quad')
-const glsl = x => x[0];
-
-function ground (regl)
-{
-    const count = 128*128;
-    const quads = quad({
-        position: Array(count).fill().map(function (item, index) {
-            const x = Math.random();
-            const y = Math.random();
-            const z = Math.random();
-            return [x, y, z]
-        }).flat()
-    })
-
-    return regl({
-        vert:glsl`
-        precision mediump float;
-        attribute vec3 position;
-        uniform mat4 projection, view;
-        uniform vec3 eye;
-        uniform float time;
-        attribute vec2 anchor, quantity;
-        varying vec3 vColor;
-
-        mat2 rot (in float a) { return mat2(cos(a),-sin(a),sin(a),cos(a)); }
-
-        void main() {
-            float size = 0.1;
-            vec3 seed = position*2.-1.;
-            seed.xz *= 10.;
-            float yy = sin(length(seed.xz))*0.1;
-            vec3 p = vec3(seed.x, yy, seed.z);
-            // vec3 z = normalize(p-eye);
-            // vec3 x = normalize(cross(z, vec3(0,1,0)));
-            // vec3 y = normalize(cross(x, z));
-            // p += (x * anchor.x + y * anchor.y) * size;
-            vec2 v = anchor * rot(quantity.x*6.28);
-            p.xz -= vec2(v.x, -v.y) * size;
-            gl_Position = projection * view * vec4(p, 1);
-            vColor = vec3(0.5)+vec3(0.5)*cos(vec3(1,3,2)*quantity.x);
-            // vColor *= (anchor.x*0.25+0.75);
-        }
-        `,
-        frag:glsl`
-        precision mediump float;
-        varying vec3 vColor;
-        void main() {
-            gl_FragColor = vec4(vColor, 1.0);
-        }
-        `,
-        attributes: {
-            position: quads[0].position,
-            anchor: quads[0].anchor,
-            quantity: quads[0].quantity,
-        },
-        elements: regl.elements({
-            primitive: 'triangles',
-            data: new Uint16Array(quads[0].indices.data),
-        }),
-        uniforms: {
-            time: regl.prop('time')
-        },
-        cull: {
-            enable: true,
-            face: 'back'
-        },
-    })
-}
-
-module.exports = ground;
-},{"./quad":29}],26:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 
 
 const url = 'ws://localhost:8137/';
@@ -9142,133 +9285,14 @@ class BlenderWebSocket {
 }
 
 module.exports = BlenderWebSocket;
-},{}],27:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /**
  * Blender HTML5 Animations 1.0.2
  * Copyright 2016 Jonathan Giroux
  * MIT licence
  */
 !function(t,e){"object"==typeof exports&&"object"==typeof module?module.exports=e(require("gl-matrix")):"function"==typeof define&&define.amd?define(["gl-matrix"],e):"object"==typeof exports?exports.blenderHTML5Animations=e(require("gl-matrix")):t.blenderHTML5Animations=e(t.window)}(this,function(t){return function(t){function e(r){if(a[r])return a[r].exports;var n=a[r]={exports:{},id:r,loaded:!1};return t[r].call(n.exports,n,n.exports,e),n.loaded=!0,n.exports}var a={};return e.m=t,e.c=a,e.p="",e(0)}([function(t,e,a){"use strict";t.exports.Action=a(1),t.exports.ActionLibrary=a(9),t.exports.FCurve=a(4),t.exports.FCurveArray=a(3),t.exports.Keyframe=a(7),t.exports.Marker=a(8)},function(t,e,a){"use strict";function r(t){function e(t){t&&(a.startTime=Math.min(a.startTime,t.keyframes[0].time),a.endTime=Math.max(a.endTime,t.keyframes[t.keyframes.length-1].time))}var a=this;this.startTime=+(1/0),this.endTime=-(1/0),this.paths={};for(var r in t[0]){var n=new u(t[0][r]);this.paths[r]=n,n.forEach(e)}this.markers=t.length>1?t[1].map(function(t){return new c(t)}):[]}var n=a(2),i=n.glMatrix,s=n.mat4,o=n.vec3,u=a(3),c=a(8);r.RotationMode={QUATERNION:0,EULER_XYZ:1,EULER_YXZ:3,EULER_XZY:2,EULER_ZXY:5,EULER_YZX:4,EULER_ZYX:6,AXIS_ANGLE:-1},r.prototype.forEachMarker=function(t,e,a){return this.markers.forEach(function(r,n){if(r.time>=t&&r.time<e)return a(r,n)})};var l=new i.ARRAY_TYPE(16);r.prototype.toWorld=function(t,e,a){function n(){i=o.fromValues(0,0,0),[c.rotation_euler,c.delta_rotation_euler].forEach(function(t){t&&o.add(i,i,t.evaluate(e,u.DefaultValues.ROTATION))})}s.identity(t);var i,c=this.paths,f=o.fromValues(0,0,0);switch([c.location,c.delta_location].forEach(function(t){t&&o.add(f,f,t.evaluate(e,u.DefaultValues.LOCATION))}),s.translate(t,t,f),a){case r.RotationMode.QUATERNION:[c.rotation_quaternion,c.delta_rotation_quaternion].forEach(function(a){a&&(s.fromQuat(l,a.evaluate(e,u.DefaultValues.ROTATION_QUATERNION)),s.multiply(t,t,l))});break;case r.RotationMode.EULER_XYZ:n(),s.rotateZ(t,t,i[2]),s.rotateY(t,t,i[1]),s.rotateX(t,t,i[0]);break;case r.RotationMode.EULER_XZY:n(),s.rotateY(t,t,i[1]),s.rotateZ(t,t,i[2]),s.rotateX(t,t,i[0]);break;case r.RotationMode.EULER_YXZ:n(),s.rotateZ(t,t,i[2]),s.rotateX(t,t,i[0]),s.rotateY(t,t,i[1]);break;case r.RotationMode.EULER_YZX:n(),s.rotateX(t,t,i[0]),s.rotateZ(t,t,i[2]),s.rotateY(t,t,i[1]);break;case r.RotationMode.EULER_ZXY:n(),s.rotateY(t,t,i[1]),s.rotateX(t,t,i[0]),s.rotateZ(t,t,i[2]);break;case r.RotationMode.EULER_ZYX:n(),s.rotateX(t,t,i[0]),s.rotateY(t,t,i[1]),s.rotateZ(t,t,i[2]);break;case r.RotationMode.AXIS_ANGLE:if(c.rotation_axis){var E=c.rotation_axis.evaluate(e,u.DefaultValues.ROTATION);s.rotate(t,t,E[3],E)}}var p=o.fromValues(1,1,1);return[c.scale,c.delta_scale].forEach(function(t){t&&o.multiply(p,p,t.evaluate(e,u.DefaultValues.SCALE))}),s.scale(t,t,p),t},r.prototype.toLocal=function(t,e,a){return this.toWorld(t,e,a),s.invert(t,t),t},r.prototype.setElementTransform=function(t,e,a){var r=new i.ARRAY_TYPE(16);this.toWorld(r,e,a);var n="matrix3d("+r.join(",")+")";["transform","mozTransform","oTransform","webkitTransform"].forEach(function(e){t.style[e]=n})},t.exports=r},function(e,a){e.exports=t},function(t,e,a){"use strict";function r(t){var e=t.map(function(t){return t&&new n(t)});return e.evaluate=function(t,a){return e.map(function(e,r){return e?e.evaluate(t):a(r,t)})},e}var n=a(4);r.DefaultValues={LOCATION:function(){return 0},ROTATION:function(){return 0},ROTATION_QUATERNION:function(t){return 3===t?1:0},SCALE:function(){return 1}},t.exports=r},function(t,e,a){"use strict";function r(t){this.keyframes=t[0].map(function(t){return new o(t)}),this.extrapolation=t[1]}function n(t,e){return Math.abs(t-e)<=r.evaluationTimeEpsilon}var i=a(5),s=a(6),o=a(7);r.Extrapolation={CONSTANT:0,LINEAR:1},r.evaluationTimeEpsilon=1e-4,r.prototype.evaluate=function(t){var e=0,a=this.keyframes[e];if(n(t,a.time))return a.value;if(t<=a.time)switch(this.extrapolation){case r.Extrapolation.LINEAR:return a.value+(a.leftValue-a.value)*(t-a.time)/(a.leftTime-a.time);default:return a.value}var u=this.keyframes.length-1,c=this.keyframes[u];if(n(t,c.time))return c.value;if(t>=c.time)switch(this.extrapolation){case r.Extrapolation.LINEAR:return c.value+(c.rightValue-c.value)*(t-c.time)/(c.rightTime-c.time);default:return c.value}for(;u-e>1;){var l=(e+u)/2|0;this.keyframes[l].time>=t?u=l:e=l}if(a=this.keyframes[e],n(t,a.time))return a.value;if(c=this.keyframes[u],n(t,c.time))return c.value;var f=t-a.time,E=a.value,p=c.time-a.time,I=c.value-a.value;switch(a.interpolation){case o.Interpolation.BACK:switch(a.easing){case o.Easing.IN:return s.backEaseIn(f,E,I,p,a.overshoot);case o.Easing.IN_OUT:return s.backEaseInOut(f,E,I,p,a.overshoot);default:return s.backEaseOut(f,E,I,p,a.overshoot)}break;case o.Interpolation.BEZIER:return i(t,a,c);case o.Interpolation.BOUNCE:switch(a.easing){case o.Easing.IN:return s.bounceEaseIn(f,E,I,p);case o.Easing.IN_OUT:return s.bounceEaseInOut(f,E,I,p);default:return s.bounceEaseOut(f,E,I,p)}break;case o.Interpolation.CIRCULAR:switch(a.easing){case o.Easing.OUT:return s.circularEaseOut(f,E,I,p);case o.Easing.IN_OUT:return s.circularEaseInOut(f,E,I,p);default:return s.circularEaseIn(f,E,I,p)}break;case o.Interpolation.CUBIC:switch(a.easing){case o.Easing.OUT:return s.cubicEaseOut(f,E,I,p);case o.Easing.IN_OUT:return s.cubicEaseInOut(f,E,I,p);default:return s.cubicEaseIn(f,E,I,p)}break;case o.Interpolation.ELASTIC:switch(a.easing){case o.Easing.IN:return s.elasticEaseIn(f,E,I,p);case o.Easing.IN_OUT:return s.elasticEaseInOut(f,E,I,p);default:return s.elasticEaseOut(f,E,I,p,a.amplitude,a.period)}break;case o.Interpolation.EXPONENTIAL:switch(a.easing){case o.Easing.OUT:return s.exponentialEaseOut(f,E,I,p);case o.Keyframe.Easing.IN_OUT:return s.exponentialEaseInOut(f,E,I,p);default:return s.exponentialEaseIn(f,E,I,p)}break;case o.Interpolation.LINEAR:return s.linear(f,E,I,p);case o.Interpolation.QUADRATIC:switch(a.easing){case o.Easing.OUT:return s.quadraticEaseOut(f,E,I,p);case o.Easing.IN_OUT:return s.quadraticEaseInOut(f,E,I,p);default:return s.quadraticEaseIn(f,E,I,p)}break;case o.Interpolation.QUARTIC:switch(a.easing){case o.Easing.OUT:return s.quarticEaseOut(f,E,I,p);case o.Easing.IN_OUT:return s.quarticEaseInOut(f,E,I,p);default:return s.quarticEaseIn(f,E,I,p)}break;case o.Interpolation.QUINTIC:switch(a.easing){case o.Easing.OUT:return s.quinticEaseOut(f,E,I,p);case o.Easing.IN_OUT:return s.quinticEaseInOut(f,E,I,p);default:return s.quinticEaseIn(f,E,I,p)}break;case o.Interpolation.SINUSOIDAL:switch(a.easing){case o.Easing.OUT:return s.sinusoidalEaseOut(f,E,I,p);case o.Easing.IN_OUT:return s.sinusoidalEaseInOut(f,E,I,p);default:return s.sinusoidalEaseIn(f,E,I,p)}break;default:return E}},t.exports=r},function(t,e){"use strict";function a(t,e,a,r,n){var i=1-n;return i*i*i*t+3*i*i*n*e+3*i*n*n*a+n*n*n*r}function r(t,e,r){var n=e.time,i=e.value,s=e.rightTime,o=e.rightValue,u=r.leftTime,c=r.leftValue,l=r.time,f=r.value,E=s-n,p=l-u,I=l-n;if(E+p>I){var h=o-i,O=f-c,m=I/(E+p);s=n+m*E,o=i+m*h,u=l-m*p,c=f-m*O}var x,T,d=0,v=1;do x=(d+v)/2,T=a(n,s,u,l,x),T>t?v=x:d=x;while(Math.abs(T-t)>.01);return a(i,o,c,f,x)}t.exports=r},function(t,e){"use strict";function a(t,e,a,r,n){return t/=r,a*t*t*((n+1)*t-n)+e}function r(t,e,a,r,n){return t=t/r-1,a*(t*t*((n+1)*t+n)+1)+e}function n(t,e,a,r,n){return n*=1.525,(t/=r/2)<1?a/2*(t*t*((n+1)*t-n))+e:(t-=2,a/2*(t*t*((n+1)*t+n)+2)+e)}function i(t,e,a,r){return t/=r,t<1/2.75?a*(7.5625*t*t)+e:t<2/2.75?(t-=1.5/2.75,a*(7.5625*t*t+.75)+e):t<2.5/2.75?(t-=2.25/2.75,a*(7.5625*t*t+.9375)+e):(t-=2.625/2.75,a*(7.5625*t*t+.984375)+e)}function s(t,e,a,r){return a-i(r-t,0,a,r)+e}function o(t,e,a,r){return t<r/2?.5*s(2*t,0,a,r)+e:.5*i(2*t-r,0,a,r)+.5*a+e}function u(t,e,a,r){return t/=r,-a*(Math.sqrt(1-t*t)-1)+e}function c(t,e,a,r){return t=t/r-1,a*Math.sqrt(1-t*t)+e}function l(t,e,a,r){return(t/=r/2)<1?-a/2*(Math.sqrt(1-t*t)-1)+e:(t-=2,a/2*(Math.sqrt(1-t*t)+1)+e)}function f(t,e,a,r){return t/=r,a*t*t*t+e}function E(t,e,a,r){return t=t/r-1,a*(t*t*t+1)+e}function p(t,e,a,r){return(t/=r/2)<1?a/2*t*t*t+e:(t-=2,a/2*(t*t*t+2)+e)}function I(t,e,a,r,n,i){if(e){var s=Math.abs(n);r?i*=r/Math.abs(e):i=0;var o=Math.abs(t*a);if(o<s){var u=o/s;i=i*u+(1-u)}}return i}function h(t,e,a,r,n,i){var s,o=1;return t<=0?e:(t/=r)>=1?e+a:(t-=1,i||(i=.3*r),!n||n<Math.abs(a)?(s=i/4,o=I(t,a,r,n,s,o),n=a):s=i/(2*Math.PI)*Math.asin(a/n),-o*(n*Math.pow(2,10*t)*Math.sin((t*r-s)*(2*Math.PI)/i))+e)}function O(t,e,a,r,n,i){var s,o=1;return t<=0?e:(t/=r)>=1?e+a:(t=-t,i||(i=.3*r),!n||n<Math.abs(a)?(s=i/4,o=I(t,a,r,n,s,o),n=a):s=i/(2*Math.PI)*Math.asin(a/n),o*(n*Math.pow(2,10*t)*Math.sin((t*r-s)*(2*Math.PI)/i))+a+e)}function m(t,e,a,r,n,i){var s,o=1;return t<=0?e:(t/=r/2)>=2?e+a:(t-=1,i||(i=r*(.3*1.5)),!n||n<Math.abs(a)?(s=i/4,o=I(t,a,r,n,s,o),n=a):s=i/(2*Math.PI)*Math.asin(a/n),t<0?(o*=-.5,o*(n*Math.pow(2,10*t)*Math.sin((t*r-s)*(2*Math.PI)/i))+e):(t=-t,o*=.5,o*(n*Math.pow(2,10*t)*Math.sin((t*r-s)*(2*Math.PI)/i))+a+e))}function x(t,e,a,r){return t<=0?e:a*Math.pow(2,10*(t/r-1))+e}function T(t,e,a,r){return t>=r?e+a:a*(-Math.pow(2,-10*t/r)+1)+e}function d(t,e,a,r){return t<=0?e:t>=r?e+a:(t/=r/2)<1?a/2*Math.pow(2,10*(t-1))+e:(t-=1,a/2*(-Math.pow(2,-10*t)+2)+e)}function v(t,e,a,r){return a*t/r+e}function M(t,e,a,r){return t/=r,a*t*t+e}function N(t,e,a,r){return t/=r,-a*t*(t-2)+e}function b(t,e,a,r){return(t/=r/2)<1?a/2*t*t+e:(t-=1,-a/2*(t*(t-2)-1)+e)}function A(t,e,a,r){return t/=r,a*t*t*t*t+e}function U(t,e,a,r){return t=t/r-1,-a*(t*t*t*t-1)+e}function R(t,e,a,r){return(t/=r/2)<1?a/2*t*t*t*t+e:(t-=2,-a/2*(t*t*t*t-2)+e)}function g(t,e,a,r){return t/=r,a*t*t*t*t*t+e}function _(t,e,a,r){return t=t/r-1,a*(t*t*t*t*t+1)+e}function k(t,e,a,r){return(t/=r/2)<1?a/2*t*t*t*t*t+e:(t-=2,a/2*(t*t*t*t*t+2)+e)}function L(t,e,a,r){return-a*Math.cos(t/r*Math.PI/2)+a+e}function w(t,e,a,r){return a*Math.sin(t/r*Math.PI/2)+e}function C(t,e,a,r){return-a/2*(Math.cos(Math.PI*t/r)-1)+e}t.exports.backEaseIn=a,t.exports.backEaseOut=r,t.exports.backEaseInOut=n,t.exports.bounceEaseOut=i,t.exports.bounceEaseIn=s,t.exports.bounceEaseInOut=o,t.exports.circularEaseIn=u,t.exports.circularEaseOut=c,t.exports.circularEaseInOut=l,t.exports.cubicEaseIn=f,t.exports.cubicEaseOut=E,t.exports.cubicEaseInOut=p,t.exports.elasticEaseIn=h,t.exports.elasticEaseOut=O,t.exports.elasticEaseInOut=m,t.exports.exponentialEaseIn=x,t.exports.exponentialEaseOut=T,t.exports.exponentialEaseInOut=d,t.exports.linear=v,t.exports.quadraticEaseIn=M,t.exports.quadraticEaseOut=N,t.exports.quadraticEaseInOut=b,t.exports.quarticEaseIn=A,t.exports.quarticEaseOut=U,t.exports.quarticEaseInOut=R,t.exports.quinticEaseIn=g,t.exports.quinticEaseOut=_,t.exports.quinticEaseInOut=k,t.exports.sinusoidalEaseIn=L,t.exports.sinusoidalEaseOut=w,t.exports.sinusoidalEaseInOut=C},function(t,e){"use strict";function a(t){this.time=t[0],this.value=t[1],this.leftTime=t[2],this.leftValue=t[3],this.rightTime=t[4],this.rightValue=t[5],this.interpolation=t[6],this.easing=t[7],this.overshoot=t[8],this.amplitude=t[8],this.period=t[9]}a.Easing={AUTO:0,IN:1,OUT:2,IN_OUT:3},a.Interpolation={CONSTANT:0,LINEAR:1,BEZIER:2,BACK:3,BOUNCE:4,CIRCULAR:5,CUBIC:6,ELASTIC:7,EXPONENTIAL:8,QUADRATIC:9,QUARTIC:10,QUINTIC:11,SINUSOIDAL:12},t.exports=a},function(t,e){"use strict";function a(t){this.time=t[0],this.name=t[1]}t.exports=a},function(t,e,a){"use strict";function r(t){for(var e in t)this[e]=new n(t[e])}var n=a(1);t.exports=r}])});
-},{"gl-matrix":6}],28:[function(require,module,exports){
-
-const quad = require('./quad');
-const glsl = x => x[0];
-
-function neon (regl)
-{
-    const count = 20;
-    const subdivisions = [100, 1];
-    const quads = quad({
-        position: Array(count).fill().map(function (item, index) {
-            const x = Math.random()*2-1;
-            const y = Math.random()*2-1;
-            const z = Math.random()*2-1;
-            return [x, y, z]
-        }).flat()
-    }, subdivisions)
-
-    return regl({
-        vert:glsl`
-        precision mediump float;
-        attribute vec3 position;
-        attribute vec2 anchor, quantity;
-        uniform mat4 projection, view;
-        uniform vec3 eye;
-        uniform float time;
-        varying vec2 uv;
-        varying vec3 world;
-        varying vec2 vQuantity;
-
-        mat2 rot (in float a) { return mat2(cos(a),-sin(a),sin(a),cos(a)); }
-
-        vec3 curve (in vec3 p, in float offset)
-        {
-            // p.y *= 0.1;
-            p.y += 2.0;
-            p.xz = normalize(p.xz) * (0.8+0.2*length(p.xz));
-            float angle = quantity.x+anchor.x*3.+offset;
-            float dir = mod(quantity.y, 2.0) < 0.5 ? 1.0 : -1.0;
-            angle *= dir;
-            // p.xy *= rot(angle);
-            p.xz *= rot(angle);
-            float lod = 1.5;
-            float t = floor(cos(angle)*lod)/lod;
-            p.y += t * 0.1;
-            return p;
-        }
-
-        void main() {
-            float thin = 0.1;
-            vec3 p = curve(position, 0.0);
-            // vec3 n = curve(position, 0.01);
-            // vec3 z = normalize(n-p);
-            // vec3 y = -normalize(cross(-normalize(p-eye), z));
-            // p += y * anchor.y * thin;
-            p.y += anchor.y * thin;
-            // p.xz += normalize(p.xz) * anchor.y * thin;
-            gl_Position = projection * view * vec4(p, 1);
-            uv = anchor * 0.5 + 0.5;
-            world = p;
-            vQuantity = quantity;
-        }
-        `,
-        frag:glsl`
-        precision mediump float;
-        varying vec2 vQuantity;
-        varying vec2 uv;
-        varying vec3 world;
-        uniform vec3 eye;
-        uniform float time;
-        void main() {
-            if (sin(time-(uv.x+vQuantity.x)*6.28) < 0.0) discard;
-            // float d = length(eye-world);
-            // d = smoothstep(6.0, 2.0, d);
-            // gl_FragColor = vec4(vec3(d), 1);
-            float d = abs(uv.y*2.-1.);
-            float neon = (1.-d)*0.1/d;
-            // vec3 tint = vec3(1, 0.772, 0.360);
-            vec3 tint = vec3(0.5)+vec3(0.5)*cos(vec3(1,2,3)*uv.x*2.);
-            gl_FragColor = vec4(tint, 1);
-        }
-        `,
-        // depth: {
-        //     enable: false,
-        // },
-        // blend: {
-        //     enable: true,
-        //     func: {
-        //         // srcRGB: 'one',
-        //         // srcAlpha: 1,
-        //         // dstRGB: 'one',
-        //         // dstAlpha: 1
-        //         srcRGB: 'src alpha',
-        //         srcAlpha: 1,
-        //         dstRGB: 'one minus src alpha',
-        //         dstAlpha: 1
-        //     },
-        //     equation: {
-        //     rgb: 'add',
-        //     alpha: 'add'
-        //     },
-        //     color: [0, 0, 0, 0]
-        // },
-        attributes: {
-            position: quads[0].position,
-            anchor: quads[0].anchor,
-            quantity: quads[0].quantity,
-        },
-        elements: regl.elements({
-            primitive: 'triangles',
-            data: new Uint16Array(quads[0].indices.data),
-        }),
-        uniforms: {
-            time: regl.prop('time')
-        },
-    })
-}
-
-module.exports = neon;
-},{"./quad":29}],29:[function(require,module,exports){
+},{"gl-matrix":10}],32:[function(require,module,exports){
 module.exports = quad;
 
 function quad (attributes, subdivisions) {
@@ -9328,53 +9352,438 @@ function quad (attributes, subdivisions) {
 	}
 	return geometries;
 }
-},{}],30:[function(require,module,exports){
-const regl = require('regl')()
-const BlenderWebSocket = require('./js/lib/BlenderWebSocket')
-const BlenderHTML5Animations = require('./js/lib/blender-html5-animations.min')
-const animationData = require('../blend/animation.json')
-const neon = require('./js/neon')(regl)
-const ground = require('./js/ground')(regl)
+},{}],33:[function(require,module,exports){
+
+const glsl = x => x[0];
+
+function sdfdebug(regl) {
+    return regl({
+        vert: glsl`
+        precision mediump float;
+        attribute vec2 uv;
+        uniform vec2 resolution;
+        varying vec2 vUV;
+        void main() {
+            vUV = uv;
+            vec2 p = uv;
+            p.x *= resolution.y/resolution.x;
+            p = p*0.5-1.0;
+            gl_Position = vec4(p, 0, 1);
+        }`,
+
+        frag: glsl`
+        precision mediump float;
+        varying vec2 vUV;
+        uniform sampler2D frame;
+        uniform vec2 resolution;
+        void main() {
+            vec3 color = texture2D(frame, vUV).rga;
+            gl_FragColor = vec4(color, 1.0);
+        }`,
+
+        attributes: {
+            uv: [ 0,0, 1,0, 0,1, 1,1 ],
+        },
+        uniforms: {
+            frame: regl.prop('frame'),
+            resolution: ({viewportWidth, viewportHeight}) => [viewportWidth, viewportHeight],
+        },
+        depth: { enable: false },
+        primitive: 'triangle strip',
+        count: 4
+        })
+    }
+
+module.exports = sdfdebug;
+},{}],34:[function(require,module,exports){
+
+const quad = require('./quad')
+const glsl = x => x[0];
+
+function sdfpoints (regl, dimension)
+{
+    const quads = quad({
+        position: Array(dimension*dimension).fill().map(function (item, index) {
+            const x = (index % dimension) / dimension;
+            const y = Math.floor(index / dimension) / dimension;
+            return [x, y, 0]
+        }).flat()
+    })
+
+    return regl({
+        vert:glsl`
+        precision mediump float;
+        attribute vec3 position;
+        attribute vec2 anchor, quantity;
+        
+        uniform mat4 projection, view;
+        uniform vec3 Points;
+        uniform float time;
+        uniform sampler2D frameColor, framePosition, frameNormal;
+
+        varying vec3 vColor;
+        varying vec2 vUV;
+        varying float vShape;
+
+        mat2 rot (in float a) { return mat2(cos(a),-sin(a),sin(a),cos(a)); }
+
+        // Dave Hoskins https://www.shadertoy.com/view/4djSRW
+        float hash11(float p) { p = fract(p * .1031); p *= p + 33.33; p *= p + p; return fract(p); }
+        vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
+        vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xx+p3.yz)*p3.zy); }
+        vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
+
+        float luminance(vec3 c) { return (c.r+c.g+c.b)/3.; }
+
+        void main()
+        {
+            // uv
+            vec2 uv = position.xy;
+
+            // jitter
+            // uv += (hash22(position.xy*200.)*2.0-1.0)*0.01;
+
+            // attributes
+            vColor = texture2D(frameColor, uv).rgb;
+            vec3 p = texture2D(framePosition, uv).rgb;
+            vec3 n = texture2D(frameNormal, uv).rgb;
+
+            // size
+            float size = Points.x + Points.y * pow(hash11(quantity.y+145.), 10.0);
+
+            // color fade out
+            size *= smoothstep(0.0, 0.1, luminance(vColor));
+
+            // lifetime fade out
+            float lifetime = texture2D(framePosition, uv).a;
+            size *= pow(sin(lifetime*3.14), 0.5);
+
+            // orientation
+            vec3 z = n;//normalize(eye-p);
+            vec3 x = normalize(cross(z, vec3(0,1,0)));
+            vec3 y = normalize(cross(x, z));
+            vec2 v = anchor * rot(quantity.x*6.28);
+            p += (x * v.x - y * v.y) * size;
+
+            // projection
+            gl_Position = projection * view * vec4(p, 1);
+            
+            // varyings
+            vUV = anchor;
+            vShape = floor(hash11(quantity.y+654.)*3.);
+        }
+        `,
+        frag:glsl`
+        precision mediump float;
+        varying vec3 vColor;
+        varying vec2 vUV;
+        varying float vShape;
+        uniform float time;
+        float hash12(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+        vec2 moda(vec2 p, float count) {
+            float angle = 6.28/count;
+            float a = atan(p.y, p.x) + angle/2.;
+            a = mod(a,angle) - angle/2.;
+            return vec2(cos(a), sin(a))*length(p);
+        }
+        void main()
+        {
+            // circle
+            if (vShape == 0.0) {
+                float dist = length(vUV);
+                if (dist > 1.0) discard;
+            }
+            // triangle
+            else if (abs(vShape-1.0) < 0.5) {
+                vec2 p = moda(vUV, 3.);
+                p.x -= 0.5;
+                if (p.x > 0.) discard;
+            }
+
+            // color
+            gl_FragColor = vec4(vec3(vColor), 1.0);
+        }
+        `,
+        attributes: {
+            position: quads[0].position,
+            anchor: quads[0].anchor,
+            quantity: quads[0].quantity,
+        },
+        elements: regl.elements({
+            primitive: 'triangles',
+            data: new Uint16Array(quads[0].indices.data),
+        }),
+        uniforms: {
+            time: regl.prop('time'),
+            Points: regl.prop('Points'),
+            frameColor: regl.prop('frameColor'),
+            framePosition: regl.prop('framePosition'),
+            frameNormal: regl.prop('frameNormal'),
+        },
+        // cull: {
+        //     enable: true,
+        //     face: 'back'
+        // },
+    })
+}
+
+module.exports = sdfpoints;
+},{"./quad":32}],35:[function(require,module,exports){
+
+
+function sdfspray(regl) {
+    
+    const anims = require('./animation')
+    
+    // 128 * 128 points * 4 vertices = pow(2, 16) = 65536
+    const dimension = 128;
+    
+    // 
+    const sdf = require('./sdf')(regl)
+    const sdfpoint = require('./sdf-point')(regl, dimension)
+    const sdfdebug = require('./sdf-debug')(regl)
+
+    // shared parameters
+    const fboAttributes = {
+        radius: dimension,
+        colorType: 'float',
+        depthStencil: false
+    }
+
+    // double fbos
+    const fboColor = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
+    const fboPosition = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
+    const fboNormal = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
+
+    // clear color fbos
+    const init = () => { regl.clear({ color: [0, 0, 0, 255] }) };
+    for (var i = 0; i < 2; ++i) {
+        fboColor[i].use(init);
+        fboPosition[i].use(init);
+        fboNormal[i].use(init);
+    }
+
+    return (tick) => {
+
+        // shared uniforms
+        var uniforms = {
+            mode: 0,
+            frameColor: fboColor[tick%2],
+            framePosition: fboPosition[tick%2],
+            frameNormal: fboNormal[tick%2],
+        };
+
+        Object.keys(anims).forEach((key, index) => {
+            uniforms[key] = anims[key];
+        })
+
+        // color buffer
+        uniforms.mode = 0;
+        fboColor[(tick+1)%2].use(() => {
+            regl.clear({ color: [0, 0, 0, 255] })
+            sdf(uniforms);
+        })
+
+        // position buffer
+        uniforms.mode = 1;
+        fboPosition[(tick+1)%2].use(() => {
+            regl.clear({ color: [0, 0, 0, 255] })
+            sdf(uniforms);
+        })
+
+        // normal buffer
+        uniforms.mode = 2;
+        fboNormal[(tick+1)%2].use(() => {
+            regl.clear({ color: [0, 0, 0, 255] })
+            sdf(uniforms);
+        });
+
+        // points
+        sdfpoint(uniforms);
+
+        // debug
+        sdfdebug({frame: uniforms.frameColor});
+    }
+}
+
+module.exports = sdfspray;
+},{"./animation":26,"./sdf":36,"./sdf-debug":33,"./sdf-point":34}],36:[function(require,module,exports){
+
+
+const glsl = x => x[0];
+
+function sdf (regl)
+{
+    return regl({
+        vert: glsl`
+        precision mediump float;
+        attribute vec2 position;
+        varying vec2 uv;
+        void main() {
+            uv = 0.5 * (position + 1.0);
+            gl_Position = vec4(position, 0, 1);
+        }`,
+
+        frag: glsl`
+
+        precision mediump float;
+
+        const int mode_color = 0;
+        const int mode_position = 1;
+        const int mode_normal = 2;
+
+        uniform vec3 eye;
+        uniform vec3 Spot, SpotTarget, KIF;
+        uniform float time;
+        uniform int mode;
+        uniform vec2 resolution;
+        uniform sampler2D frameColor, framePosition, frameNormal;
+
+        varying vec2 uv;
+
+        mat2 rot (in float a) { return mat2(cos(a),-sin(a),sin(a),cos(a)); }
+
+        // Dave Hoskins https://www.shadertoy.com/view/4djSRW
+        float hash11(float p) { p = fract(p * .1031); p *= p + 33.33; p *= p + p; return fract(p); }
+        float hash12(vec2 p) { vec3 p3  = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+        vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
+        vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xx+p3.yz)*p3.zy); }
+        vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
+
+        vec3 look (vec3 eye, vec3 target, vec2 anchor) {
+            vec3 forward = normalize(target-eye);
+            vec3 right = normalize(cross(forward, vec3(0,1,0)));
+            vec3 up = normalize(cross(right, forward));
+            return normalize(forward + right * anchor.x + up * anchor.y);
+        }
+
+        float map(vec3 p)
+        {
+            float dist = 100.;
+
+            const int count = 8;
+            float radius = KIF.x;
+            float range = KIF.y;
+            float falloff = KIF.z;
+
+            float a = 1.0;
+            for (int index = 0; index < count; ++index)
+            {
+                p.xz *= rot(1.0/a);
+                p.yz *= rot(1.0/a);
+                p.xz = abs(p.xz) - range*a;
+                dist = min(dist, length(p)-radius*a);
+                a /= falloff;
+            }
+
+            dist = abs(dist)-0.01;
+
+            return dist;
+        }
+
+        // NuSan https://www.shadertoy.com/view/3sBGzV
+        vec3 getNormal(vec3 p) {
+            vec2 off=vec2(0.001,0);
+            return normalize(map(p)-vec3(map(p-off.xyy), map(p-off.yxy), map(p-off.yyx)));
+        }
+
+        void main()
+        {
+
+            // previous state
+            if (mode == mode_color)
+                gl_FragColor = texture2D(frameColor, uv);
+            else if (mode == mode_position)
+                gl_FragColor = texture2D(framePosition, uv);
+            else // if (mode == mode_normal)
+                gl_FragColor = texture2D(frameNormal, uv);
+
+            // spawn
+            float lifetime = texture2D(framePosition, uv).a;
+            if (lifetime > 1.0)
+            {
+                gl_FragColor.rgb = vec3(0);
+                // raymarching
+                vec2 uvp = uv;
+                // uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.1;
+                vec2 viewport = (uvp*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
+                vec3 ray = look(Spot, SpotTarget, viewport);
+                vec3 pos = Spot;
+                vec3 color = vec3(0);
+                const int count = 30;
+                for (int index = 0; index < count; ++index)
+                {
+                    float dist = map(pos);
+                    if (dist < 0.001)
+                    {
+                        if (mode == mode_color)
+                        {
+                            float shade = float(count-index)/float(count);
+                            color = vec3(shade);
+                            gl_FragColor.rgb = color;
+                        }
+                        else if (mode == mode_position)
+                        {
+                            gl_FragColor.rgb = pos;
+                        }
+                        else // if (mode == mode_normal)
+                        {
+                            gl_FragColor.rgb = getNormal(pos);
+                        }
+                        break;
+                    }
+                    pos += ray * dist;
+                }
+                lifetime = 0.0;
+            }
+            lifetime += 0.01 + 0.01 * hash12(uv*100.);
+            gl_FragColor.a = lifetime;
+        }
+        `,
+        attributes: {
+            position: [ -4, -4, 4, -4, 0, 4 ]
+        },
+        uniforms: {
+            resolution: ({viewportWidth, viewportHeight}) => [viewportWidth, viewportHeight],
+            mode: regl.prop('mode'),
+            Spot: regl.prop('Spot'),
+            SpotTarget: regl.prop('SpotTarget'),
+            KIF: regl.prop('KIF'),
+            frameColor: regl.prop('frameColor'),
+            framePosition: regl.prop('framePosition'),
+            frameNormal: regl.prop('frameNormal'),
+        },
+        depth: { enable: false },
+        count: 3
+    });
+}
+
+module.exports = sdf;
+},{}],37:[function(require,module,exports){
+const regl = require('regl')({
+  extensions: 'OES_texture_float'
+})
+const glsl = x => x[0];
+
 const axis = require('./js/axis')(regl)
 const grid = require('./js/grid')(regl)
+const anims = require('./js/animation')
+const sdfspray = require('./js/sdf-spray')(regl)
 const camera = require('./js/camera')(regl, {
     center: [0,0,0],
     distance: 4
 })
 
-console.log(animationData);
-var animations = new BlenderHTML5Animations.ActionLibrary(animationData);
+regl.frame(({deltaTime, viewportWidth, viewportHeight, tick}) => {
 
-var elapsed = 0;
-var cam = {
-    position: [0,0,-4],
-    target: [0,0,0]
-}
+    // var position = anims['CameraAction'].paths['location'].evaluate(elapsed);
 
-var blenderSocket = new BlenderWebSocket();
-blenderSocket.addListener('frame', function(frame)
-{
-    elapsed = frame / 24;
-});
-function xyz2xzy(a) { return [-a[0], a[2], a[1]]; }
-blenderSocket.addListener('data', function(data)
-{
-    cam.position = xyz2xzy(data.Camera.location);
-    cam.target = xyz2xzy(data.CameraTarget.location);
-});
-
-regl.frame(function () {
-    regl.clear({
-        color: [0, 0, 0, 1]
-    })
-
-    // var position = animations['CameraAction'].paths['location'].evaluate(elapsed);
-    
-    camera(cam.position, cam.target, () => {
-        neon({ time: regl.now() })
+    // points
+    camera(anims, () => {
+        regl.clear({ color: [0, 0, 0, 255] })
         // axis()
-        // grid({ time: regl.now() })
-        ground({ time: regl.now() })
+        grid({ time: regl.now() })
+        sdfspray(tick)
     })
 })
-},{"../blend/animation.json":1,"./js/axis":22,"./js/camera":23,"./js/grid":24,"./js/ground":25,"./js/lib/BlenderWebSocket":26,"./js/lib/blender-html5-animations.min":27,"./js/neon":28,"regl":20}]},{},[30]);
+},{"./js/animation":26,"./js/axis":27,"./js/camera":28,"./js/grid":29,"./js/sdf-spray":35,"regl":24}]},{},[37]);

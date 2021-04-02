@@ -65,8 +65,8 @@ function createCamera (regl, props) {
 
   function updateCamera (anims) {
 
-    cameraState.eye = anims.position
-    cameraState.center = anims.target;
+    cameraState.eye = anims.Camera
+    cameraState.center = anims.CameraTarget;
     
     var center = cameraState.center
     var eye = cameraState.eye

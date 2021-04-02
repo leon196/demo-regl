@@ -37,12 +37,14 @@ function sdfspray(regl) {
         // shared uniforms
         var uniforms = {
             mode: 0,
-            spot: anims.spot,
-            spotTarget: anims.spotTarget,
             frameColor: fboColor[tick%2],
             framePosition: fboPosition[tick%2],
             frameNormal: fboNormal[tick%2],
         };
+
+        Object.keys(anims).forEach((key, index) => {
+            uniforms[key] = anims[key];
+        })
 
         // color buffer
         uniforms.mode = 0;
@@ -69,7 +71,7 @@ function sdfspray(regl) {
         sdfpoint(uniforms);
 
         // debug
-        sdfdebug({frame: uniforms.framePosition});
+        sdfdebug({frame: uniforms.frameColor});
     }
 }
 
