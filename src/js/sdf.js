@@ -39,6 +39,7 @@ function sdf (regl)
         vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
         vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xx+p3.yz)*p3.zy); }
         vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
+        vec3 hash32(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yxz+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
 
         vec3 look (vec3 eye, vec3 target, vec2 anchor) {
             vec3 forward = normalize(target-eye);
@@ -50,8 +51,9 @@ function sdf (regl)
         float map(vec3 p)
         {
             float dist = 100.;
+            vec3 p0 = p;
 
-            const int count = 8;
+            const int count = 2;
             float radius = KIF.x;
             float range = KIF.y;
             float falloff = KIF.z;
@@ -67,6 +69,8 @@ function sdf (regl)
             }
 
             dist = abs(dist)-0.01;
+
+            dist = min(dist, p0.y);
 
             return dist;
         }
@@ -97,7 +101,8 @@ function sdf (regl)
                 vec2 uvp = uv;
                 // uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.1;
                 vec2 viewport = (uvp*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
-                vec3 ray = look(Spot, SpotTarget, viewport);
+                // vec3 ray = look(Spot, SpotTarget, viewport);
+                vec3 ray = normalize(hash32(viewport*1000.+time)*2.-1.);
                 vec3 pos = Spot;
                 vec3 color = vec3(0);
                 const int count = 30;
@@ -106,11 +111,13 @@ function sdf (regl)
                     float dist = map(pos);
                     if (dist < 0.001)
                     {
+                        vec3 normal = getNormal(pos);
                         if (mode == mode_color)
                         {
                             float shade = float(count-index)/float(count);
-                            color = vec3(shade);
-                            gl_FragColor.rgb = color;
+                            color = vec3(1,0,0) * shade;
+                            color += vec3(1,1,0) * pow(clamp(dot(normal, normalize(Spot-pos)), 0., 1.), 10.);
+                            gl_FragColor.rgb = color * 0.5;
                         }
                         else if (mode == mode_position)
                         {
@@ -118,7 +125,7 @@ function sdf (regl)
                         }
                         else // if (mode == mode_normal)
                         {
-                            gl_FragColor.rgb = getNormal(pos);
+                            gl_FragColor.rgb = normal;
                         }
                         break;
                     }
@@ -126,7 +133,7 @@ function sdf (regl)
                 }
                 lifetime = 0.0;
             }
-            lifetime += 0.01 + 0.01 * hash12(uv*100.);
+            lifetime += 0.001 + 0.01 * hash12(uv*100.);
             gl_FragColor.a = lifetime;
         }
         `,

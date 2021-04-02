@@ -9760,30 +9760,38 @@ function sdf (regl)
 
 module.exports = sdf;
 },{}],37:[function(require,module,exports){
-const regl = require('regl')({
-  extensions: 'OES_texture_float'
-})
-const glsl = x => x[0];
 
-const axis = require('./js/axis')(regl)
-const grid = require('./js/grid')(regl)
-const anims = require('./js/animation')
-const sdfspray = require('./js/sdf-spray')(regl)
-const camera = require('./js/camera')(regl, {
-    center: [0,0,0],
-    distance: 4
-})
 
-regl.frame(({deltaTime, viewportWidth, viewportHeight, tick}) => {
-
-    // var position = anims['CameraAction'].paths['location'].evaluate(elapsed);
-
-    // points
-    camera(anims, () => {
-        regl.clear({ color: [0, 0, 0, 255] })
-        // axis()
-        grid({ time: regl.now() })
-        sdfspray(tick)
+document.getElementById("start").onclick = function()
+{
+    const regl = require('regl')({
+        extensions: 'OES_texture_float'
     })
-})
+    const glsl = x => x[0];
+
+    const axis = require('./js/axis')(regl)
+    const grid = require('./js/grid')(regl)
+    const anims = require('./js/animation')
+    const sdfspray = require('./js/sdf-spray')(regl)
+    const camera = require('./js/camera')(regl, {
+        center: [0,0,0],
+        distance: 4
+    })
+    var audio = new Audio('music.mp3');
+    audio.play();
+    
+    regl.frame(({deltaTime, viewportWidth, viewportHeight, tick}) => {
+    
+        // var position = anims['CameraAction'].paths['location'].evaluate(elapsed);
+    
+        // points
+        camera(anims, () => {
+            regl.clear({ color: [0, 0, 0, 255] })
+            // axis()
+            grid({ time: regl.now() })
+            sdfspray(tick)
+        })
+    })
+}
+
 },{"./js/animation":26,"./js/axis":27,"./js/camera":28,"./js/grid":29,"./js/sdf-spray":35,"regl":24}]},{},[37]);

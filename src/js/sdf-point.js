@@ -61,7 +61,7 @@ function sdfpoints (regl, dimension)
             size *= pow(sin(lifetime*3.14), 0.5);
 
             // orientation
-            vec3 z = n;//normalize(eye-p);
+            vec3 z = n+.001;//normalize(eye-p);
             vec3 x = normalize(cross(z, vec3(0,1,0)));
             vec3 y = normalize(cross(x, z));
             vec2 v = anchor * rot(quantity.x*6.28);
@@ -69,6 +69,7 @@ function sdfpoints (regl, dimension)
 
             // projection
             gl_Position = projection * view * vec4(p, 1);
+            gl_Position.z += hash11(quantity.y)*0.01;
             
             // varyings
             vUV = anchor;
@@ -122,10 +123,10 @@ function sdfpoints (regl, dimension)
             framePosition: regl.prop('framePosition'),
             frameNormal: regl.prop('frameNormal'),
         },
-        // cull: {
-        //     enable: true,
-        //     face: 'back'
-        // },
+        cull: {
+            enable: true,
+            face: 'back'
+        },
     })
 }
 
