@@ -2,15 +2,15 @@
 
 function sdfspray(regl) {
     
-    const anims = require('./js-anims')
+    const anims = require('./anims')
     
     // 128 * 128 points * 4 vertices = pow(2, 16) = 65536
     const dimension = 128;
     
     // 
-    const sdf = require('./js-sdf')(regl)
-    const sdfpoint = require('./mesh-point')(regl, dimension)
-    const sdfdebug = require('./mesh-debug')(regl)
+    const sdf = require('./sdf')(regl)
+    const sdfpoint = require('../mesh/point')(regl, dimension)
+    const sdfdebug = require('../mesh/debug')(regl)
 
     // shared parameters
     const fboAttributes = {
@@ -71,7 +71,7 @@ function sdfspray(regl) {
         sdfpoint(uniforms);
 
         // debug
-        sdfdebug({frame: uniforms.frameColor});
+        // sdfdebug({frame: uniforms.frameColor});
     }
 }
 

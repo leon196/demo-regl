@@ -10,11 +10,11 @@
 
     console.log(mat4);
 
-    const axis = require('./js/mesh-axis')(regl)
-    const grid = require('./js/mesh-grid')(regl)
-    const papillon = require('./js/mesh-papillon')(regl)
-    const anims = require('./js/js-anims')
-    const sdfspray = require('./js/js-spray')(regl)
+    const axis = require('./mesh/axis')(regl)
+    const grid = require('./mesh/grid')(regl)
+    const papillon = require('./mesh/papillon')(regl)
+    const anims = require('./js/anims')
+    const sdfspray = require('./js/spray')(regl)
     // var audio = new Audio('music.mp3');
     // audio.play();
 

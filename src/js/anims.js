@@ -1,6 +1,6 @@
 
-const BlenderWebSocket = require('./lib/BlenderWebSocket')
-const BlenderHTML5Animations = require('./lib/blender-html5-animations.min')
+const BlenderWebSocket = require('../lib/BlenderWebSocket')
+const BlenderHTML5Animations = require('../lib/blender-html5-animations.min')
 const animationData = require('../../blend/animation.json')
 
 console.log(animationData);
