@@ -48,7 +48,7 @@
 
     regl.frame(() => {
         scene((context) => {
-            const dt = regl.now() - elapsed;
+            const dt = Math.max(0, Math.min(1, regl.now() - elapsed));
             anims.update(2 * dt);
             elapsed = regl.now();
             Object.keys(anims).forEach((key) => context[key] = anims[key] )
@@ -74,8 +74,8 @@
             // }));
 
             // debug
-            debug({frame: spray.uniforms.frameColor, offset: [0, 0]});
-            debug({frame: spray2.uniforms.frameColor, offset: [1, 0]});
+            // debug({frame: spray.uniforms.frameColor, offset: [0, 0]});
+            // debug({frame: spray2.uniforms.frameColor, offset: [1, 0]});
             // debug({frame: spray.uniforms.framePosition, offset: [1, 0]});
             // debug({frame: spray.uniforms.frameNormal, offset: [2, 0]});
         })

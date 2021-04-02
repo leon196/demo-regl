@@ -22,7 +22,7 @@ function sdf (regl)
         const int mode_position = 1;
         const int mode_normal = 2;
 
-        uniform vec3 ParameterKIF;
+        uniform vec3 ParameterKIF, ParameterPoints;
         uniform mat4 transform;
         uniform float time;
         uniform int mode;
@@ -143,7 +143,7 @@ function sdf (regl)
                 }
                 lifetime = 0.0;
             }
-            lifetime += 0.001 + 0.001 * hash12(uv*100.);
+            lifetime += 0.001 + ParameterPoints.z * hash12(uv*100.);
             gl_FragColor.a = lifetime;
         }
         `,
@@ -157,6 +157,7 @@ function sdf (regl)
             colorHot: regl.prop('colorHot'),
             colorCold: regl.prop('colorCold'),
             ParameterKIF: regl.prop('ParameterKIF'),
+            ParameterPoints: regl.prop('ParameterPoints'),
             frameColor: regl.prop('frameColor'),
             framePosition: regl.prop('framePosition'),
             frameNormal: regl.prop('frameNormal'),
