@@ -42,7 +42,13 @@ function sdf (regl)
         vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
         vec3 hash32(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yxz+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
 
-        vec3 look (vec3 eye, vec3 target, vec2 anchor) {
+        vec3 look (vec3 eye, vec3 forward, vec2 anchor) {
+            vec3 right = normalize(cross(forward, vec3(0,1,0)));
+            vec3 up = normalize(cross(right, forward));
+            return normalize(forward + right * anchor.x + up * anchor.y);
+        }
+
+        vec3 lookAt (vec3 eye, vec3 target, vec2 anchor) {
             vec3 forward = normalize(target-eye);
             vec3 right = normalize(cross(forward, vec3(0,1,0)));
             vec3 up = normalize(cross(right, forward));
@@ -104,7 +110,8 @@ function sdf (regl)
                 uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.1;
                 vec2 viewport = (uvp*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
                 // viewport = normalize(viewport) * pow(length(viewport), 100.);
-                vec3 ray = look(origin, vec3(0), viewport);
+                vec3 forward = (transform * vec4(0,0,-1,0)).xyz;
+                vec3 ray = look(origin, forward, viewport);
                 // vec3 ray = normalize(hash32(viewport*1000.+time)*2.-1.);
                 vec3 pos = origin;
                 vec3 color = vec3(0);
@@ -136,7 +143,7 @@ function sdf (regl)
                 }
                 lifetime = 0.0;
             }
-            lifetime += 0.001 + 0.01 * hash12(uv*100.);
+            lifetime += 0.001 + 0.001 * hash12(uv*100.);
             gl_FragColor.a = lifetime;
         }
         `,

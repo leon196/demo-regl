@@ -9,6 +9,7 @@
     const mat4 = require('gl-mat4')
     const axis = require('./mesh/axis')(regl)
     const grid = require('./mesh/grid')(regl)
+    const cookie = require('./mesh/cookie')(regl)
     const anims = require('./js/anims')
     const Spray = require('./js/spray')
     const debug = require('./mesh/debug')(regl)
@@ -16,9 +17,10 @@
     const spray2 = new Spray(regl);
     // var audio = new Audio('music.mp3');
     // audio.play();
+    var elapsed = 0;
 
     var scene = regl({
-        context: Object.assign({}, {
+        context: {
             
             projection: function (context) {
             return mat4.perspective([],
@@ -35,11 +37,7 @@
 
             time: function() { return regl.now() },
 
-        }, Object.keys(anims).reduce(function (uniforms, name) {
-            uniforms[name] = anims[name];
-            return uniforms;
-            }, {})
-        ),
+        },
 
         uniforms: {
             view: regl.context('view'),
@@ -50,6 +48,9 @@
 
     regl.frame(() => {
         scene((context) => {
+            const dt = regl.now() - elapsed;
+            anims.update(2 * dt);
+            elapsed = regl.now();
             Object.keys(anims).forEach((key) => context[key] = anims[key] )
             regl.clear({ color: [0, 0, 0, 255] })
 
@@ -67,6 +68,10 @@
                 colorHot: [1,1,0],
                 colorCold: [1,0,0.5],
             }))
+
+            // cookie(Object.assign({}, context, {
+            //     transform: mat4.invert([], mat4.lookAt([], anims.Cookie, anims.CookieTarget, [0,1,0])),
+            // }));
 
             // debug
             debug({frame: spray.uniforms.frameColor, offset: [0, 0]});

@@ -3,6 +3,7 @@
 function Spray(regl) {
     
     const anims = require('./anims')
+    const random = require('../mesh/random')(regl)
     
     // 128 * 128 points * 4 vertices = pow(2, 16) = 65536
     const dimension = 128;
@@ -25,7 +26,7 @@ function Spray(regl) {
     this.fboNormal = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
 
     // clear color fbos
-    const init = () => { regl.clear({ color: [0, 0, 0, 255] }) };
+    const init = () => { regl.clear({ color: [0, 0, 0, 1] }); random(); };
     for (var i = 0; i < 2; ++i) {
         this.fboColor[i].use(init);
         this.fboPosition[i].use(init);
@@ -53,21 +54,21 @@ Spray.prototype.draw = function(context) {
     // color buffer
     self.uniforms.mode = 0;
     self.fboColor[(tick+1)%2].use(() => {
-        regl.clear({ color: [0, 0, 0, 255] })
+        regl.clear({ color: [0, 0, 0, 1] })
         self.sdf(self.uniforms);
     })
 
     // position buffer
     self.uniforms.mode = 1;
     self.fboPosition[(tick+1)%2].use(() => {
-        regl.clear({ color: [0, 0, 0, 255] })
+        regl.clear({ color: [0, 0, 0, 1] })
         self.sdf(self.uniforms);
     })
 
     // normal buffer
     self.uniforms.mode = 2;
     self.fboNormal[(tick+1)%2].use(() => {
-        regl.clear({ color: [0, 0, 0, 255] })
+        regl.clear({ color: [0, 0, 0, 1] })
         self.sdf(self.uniforms);
     });
 
