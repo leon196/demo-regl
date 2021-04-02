@@ -10,7 +10,6 @@ function Spray(regl) {
     // 
     this.sdf = require('./sdf')(regl)
     this.sdfpoint = require('../mesh/point')(regl, dimension)
-    this.sdfdebug = require('../mesh/debug')(regl)
     this.papillon = require('../mesh/papillon')(regl)
 
     // shared parameters
@@ -34,9 +33,10 @@ function Spray(regl) {
     }
 
     this.regl = regl;
+    this.uniforms = {};
 }
 
-Spray.prototype.draw = function(context, batchID) {
+Spray.prototype.draw = function(context) {
 
     const tick = context.tick;
 
@@ -44,41 +44,38 @@ Spray.prototype.draw = function(context, batchID) {
     var regl = this.regl;
 
     // shared uniforms
-    var uniforms = Object.assign({}, context);
+    self.uniforms = Object.assign({}, context);
 
-    uniforms.frameColor = self.fboColor[tick%2];
-    uniforms.framePosition = self.fboPosition[tick%2];
-    uniforms.frameNormal = self.fboNormal[tick%2];
+    self.uniforms.frameColor = self.fboColor[tick%2];
+    self.uniforms.framePosition = self.fboPosition[tick%2];
+    self.uniforms.frameNormal = self.fboNormal[tick%2];
 
     // color buffer
-    uniforms.mode = 0;
+    self.uniforms.mode = 0;
     self.fboColor[(tick+1)%2].use(() => {
         regl.clear({ color: [0, 0, 0, 255] })
-        self.sdf(uniforms);
+        self.sdf(self.uniforms);
     })
 
     // position buffer
-    uniforms.mode = 1;
+    self.uniforms.mode = 1;
     self.fboPosition[(tick+1)%2].use(() => {
         regl.clear({ color: [0, 0, 0, 255] })
-        self.sdf(uniforms);
+        self.sdf(self.uniforms);
     })
 
     // normal buffer
-    uniforms.mode = 2;
+    self.uniforms.mode = 2;
     self.fboNormal[(tick+1)%2].use(() => {
         regl.clear({ color: [0, 0, 0, 255] })
-        self.sdf(uniforms);
+        self.sdf(self.uniforms);
     });
 
     // points
-    self.sdfpoint(uniforms);
+    self.sdfpoint(self.uniforms);
     
     // papillon
-    self.papillon(uniforms);
-
-    // debug
-    self.sdfdebug({frame: uniforms.frameColor, offset: [batchID, 0]});
+    self.papillon(self.uniforms);
 }
 
 module.exports = Spray;

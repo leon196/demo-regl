@@ -54,10 +54,10 @@ function sdf (regl)
             float dist = 100.;
             vec3 p0 = p;
 
-            const int count = 2;
-            float radius = ParameterKIF.x;
-            float range = ParameterKIF.y;
-            float falloff = ParameterKIF.z;
+            const int count = 8;
+            float radius = -ParameterKIF.x;
+            float range = ParameterKIF.z;
+            float falloff = ParameterKIF.y;
 
             float a = 1.0;
             for (int index = 0; index < count; ++index)
@@ -101,8 +101,9 @@ function sdf (regl)
                 vec3 origin = (transform * vec4(0,0,0,1)).xyz;
                 // raymarching
                 vec2 uvp = uv;
-                uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.5;
+                uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.1;
                 vec2 viewport = (uvp*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
+                // viewport = normalize(viewport) * pow(length(viewport), 100.);
                 vec3 ray = look(origin, vec3(0), viewport);
                 // vec3 ray = normalize(hash32(viewport*1000.+time)*2.-1.);
                 vec3 pos = origin;

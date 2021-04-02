@@ -17,6 +17,7 @@ function papillon(regl)
         uniform mat4 projection, view;
         uniform float time;
         uniform mat4 transform;
+        uniform vec2 offset;
 
         varying vec2 uv;
 
@@ -50,7 +51,7 @@ function papillon(regl)
             vec2 v = anchor;
 
             // waving wings
-            x = (rotationMatrix(y, sin(time*sign(anchor.x)*speed-anchor.x)) * vec4(x, 0)).xyz;
+            x = (rotationMatrix(y, sin((time+offset.x)*sign(anchor.x)*speed-anchor.x)) * vec4(x, 0)).xyz;
 
             // jiggle
             p.y += sin(time * speed) * 0.1;
@@ -96,6 +97,7 @@ function papillon(regl)
         }),
         uniforms: {
             transform: regl.prop('transform'),
+            offset: regl.prop('offset'),
             colorHot: regl.prop('colorHot'),
             colorCold: regl.prop('colorCold'),
         }

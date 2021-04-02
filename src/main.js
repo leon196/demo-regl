@@ -11,6 +11,7 @@
     const grid = require('./mesh/grid')(regl)
     const anims = require('./js/anims')
     const Spray = require('./js/spray')
+    const debug = require('./mesh/debug')(regl)
     const spray = new Spray(regl);
     const spray2 = new Spray(regl);
     // var audio = new Audio('music.mp3');
@@ -21,7 +22,7 @@
             
             projection: function (context) {
             return mat4.perspective([],
-                Math.PI / 4,
+                Math.PI / 3,
                 context.viewportWidth / context.viewportHeight,
                 0.01, 100.0)
             },
@@ -51,18 +52,27 @@
         scene((context) => {
             Object.keys(anims).forEach((key) => context[key] = anims[key] )
             regl.clear({ color: [0, 0, 0, 255] })
+
             // axis(context)
             // grid(context)
             spray.draw(Object.assign({}, context, {
                 transform: mat4.invert([], mat4.lookAt([], anims.PapillonBleu, anims.PapillonBleuTarget, [0,1,0])),
+                offset: [0,0],
                 colorHot: [0,1,0],
                 colorCold: [0.5,0,1],
-            }), 0)
+            }))
             spray2.draw(Object.assign({}, context, {
                 transform: mat4.invert([], mat4.lookAt([], anims.PapillonRouge, anims.PapillonRougeTarget, [0,1,0])),
+                offset: [1,0],
                 colorHot: [1,1,0],
                 colorCold: [1,0,0.5],
-            }), 1)
+            }))
+
+            // debug
+            debug({frame: spray.uniforms.frameColor, offset: [0, 0]});
+            debug({frame: spray2.uniforms.frameColor, offset: [1, 0]});
+            // debug({frame: spray.uniforms.framePosition, offset: [1, 0]});
+            // debug({frame: spray.uniforms.frameNormal, offset: [2, 0]});
         })
     })
 // }
