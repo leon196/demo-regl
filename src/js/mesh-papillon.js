@@ -1,5 +1,5 @@
 
-const quad = require('./quad');
+const quad = require('./js-quad');
 const glsl = x => x[0];
 
 function papillon(regl)

@@ -1,17 +1,14 @@
 
-const quad = require('./quad')
+const quad = require('./js-quad')
 const glsl = x => x[0];
 
-function dust (regl)
+function sdfpoints (regl, dimension)
 {
-    const count = 64*64;
-    const range = 20.;
     const quads = quad({
-        position: Array(count).fill().map(function (item, index) {
-            const x = Math.random()*2.-1.;
-            const y = Math.random()*0.5;
-            const z = Math.random()*2.-1.;
-            return [x*range, y*range, z*range]
+        position: Array(dimension*dimension).fill().map(function (item, index) {
+            const x = (index % dimension) / dimension;
+            const y = Math.floor(index / dimension) / dimension;
+            return [x, y, 0]
         }).flat()
     })
 
@@ -19,10 +16,13 @@ function dust (regl)
         vert:glsl`
         precision mediump float;
         attribute vec3 position;
-        uniform mat4 projection, view;
-        uniform vec3 eye;
-        uniform float time;
         attribute vec2 anchor, quantity;
+        
+        uniform mat4 projection, view;
+        uniform vec3 Points;
+        uniform float time;
+        uniform sampler2D frameColor, framePosition, frameNormal;
+
         varying vec3 vColor;
         varying vec2 vUV;
         varying float vShape;
@@ -32,42 +32,48 @@ function dust (regl)
         // Dave Hoskins https://www.shadertoy.com/view/4djSRW
         float hash11(float p) { p = fract(p * .1031); p *= p + 33.33; p *= p + p; return fract(p); }
         vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
+        vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xx+p3.yz)*p3.zy); }
         vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
+
+        float luminance(vec3 c) { return (c.r+c.g+c.b)/3.; }
 
         void main()
         {
+            // uv
+            vec2 uv = position.xy;
+
+            // jitter
+            // uv += (hash22(position.xy*200.)*2.0-1.0)*0.01;
+
+            // attributes
+            vColor = texture2D(frameColor, uv).rgb;
+            vec3 p = texture2D(framePosition, uv).rgb;
+            vec3 n = texture2D(frameNormal, uv).rgb;
+
             // size
-            float size = 0.02 + 0.1 * pow(hash11(quantity.y+145.), 100.0);
+            float size = Points.x + Points.y * pow(hash11(quantity.y+145.), 10.0);
 
-            // distribution
-            vec3 seed = position;
-            vec3 p = position;
+            // color fade out
+            size *= smoothstep(0.0, 0.1, luminance(vColor));
 
-            vec3 offset = normalize(hash31(quantity.y+42.)*2.-1.);
-            float s = 0.5+0.5*hash11(quantity.y+74.);
-            offset.xz *= rot(time*s);
-            offset.yz *= rot(time*s);
-            offset.yx *= rot(time*s);
-            p += offset*0.1;
+            // lifetime fade out
+            float lifetime = texture2D(framePosition, uv).a;
+            size *= pow(sin(lifetime*3.14), 0.5);
 
-            float d = smoothstep(1.0, 5.0, length(p-eye));
-            size *= d;
-            
             // orientation
-            vec3 z = normalize(eye-p);
+            vec3 z = n+.001;//normalize(eye-p);
             vec3 x = normalize(cross(z, vec3(0,1,0)));
             vec3 y = normalize(cross(x, z));
-            vec2 v = anchor * rot(quantity.x*6.28 + time);
+            vec2 v = anchor * rot(quantity.x*6.28);
             p += (x * v.x - y * v.y) * size;
 
             // projection
             gl_Position = projection * view * vec4(p, 1);
+            gl_Position.z += hash11(quantity.y)*0.01;
             
             // varyings
             vUV = anchor;
             vShape = floor(hash11(quantity.y+654.)*3.);
-            vColor = vec3(1);
-            // vColor = vec3(0.5)+vec3(0.5)*cos(vec3(1)*(quantity.x+anchor.y*3.)*1.5);
         }
         `,
         frag:glsl`
@@ -86,20 +92,19 @@ function dust (regl)
         void main()
         {
             // circle
-            // if (vShape == 0.0) {
-            //     float dist = length(vUV);
-            //     if (dist > 1.0) discard;
-            // }
-            // // triangle
-            // else if (abs(vShape-1.0) < 0.5) {
-            //     vec2 p = moda(vUV, 3.);
-            //     p.x -= 0.5;
-            //     if (p.x > 0.) discard;
-            // }
-            // else square
+            if (vShape == 0.0) {
+                float dist = length(vUV);
+                if (dist > 1.0) discard;
+            }
+            // triangle
+            else if (abs(vShape-1.0) < 0.5) {
+                vec2 p = moda(vUV, 3.);
+                p.x -= 0.5;
+                if (p.x > 0.) discard;
+            }
 
             // color
-            gl_FragColor = vec4(vColor, 1.0);
+            gl_FragColor = vec4(vec3(vColor), 1.0);
         }
         `,
         attributes: {
@@ -112,7 +117,11 @@ function dust (regl)
             data: new Uint16Array(quads[0].indices.data),
         }),
         uniforms: {
-            time: regl.prop('time')
+            time: regl.prop('time'),
+            Points: regl.prop('Points'),
+            frameColor: regl.prop('frameColor'),
+            framePosition: regl.prop('framePosition'),
+            frameNormal: regl.prop('frameNormal'),
         },
         cull: {
             enable: true,
@@ -121,4 +130,4 @@ function dust (regl)
     })
 }
 
-module.exports = dust;
+module.exports = sdfpoints;
