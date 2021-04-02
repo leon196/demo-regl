@@ -32,19 +32,23 @@ function sdfspray(regl) {
         fboNormal[i].use(init);
     }
 
-    return (tick) => {
+    return (context) => {
+
+        const tick = context.tick;
 
         // shared uniforms
-        var uniforms = {
+        var uniforms = Object.assign({}, {
             mode: 0,
             frameColor: fboColor[tick%2],
             framePosition: fboPosition[tick%2],
             frameNormal: fboNormal[tick%2],
-        };
-
-        Object.keys(anims).forEach((key, index) => {
-            uniforms[key] = anims[key];
-        })
+        }, context);
+        
+        // console.log(uniforms);
+        
+        // Object.keys(anims).forEach((key, index) => {
+        //     uniforms[key] = anims[key];
+        // })
 
         // color buffer
         uniforms.mode = 0;
@@ -71,7 +75,7 @@ function sdfspray(regl) {
         sdfpoint(uniforms);
 
         // debug
-        // sdfdebug({frame: uniforms.frameColor});
+        sdfdebug({frame: uniforms.frameColor});
     }
 }
 

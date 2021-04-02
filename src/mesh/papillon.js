@@ -98,8 +98,8 @@ function papillon(regl)
             data: new Uint16Array(quads[0].indices.data),
         }),
         uniforms: {
-            Spot: regl.prop('Spot'),
-        },
+            Spot: regl.prop('Spot')
+        }
     })
 }
 

@@ -101,8 +101,8 @@ function sdf (regl)
                 vec2 uvp = uv;
                 // uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.1;
                 vec2 viewport = (uvp*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
-                // vec3 ray = look(Spot, SpotTarget, viewport);
-                vec3 ray = normalize(hash32(viewport*1000.+time)*2.-1.);
+                vec3 ray = look(Spot, SpotTarget, viewport);
+                // vec3 ray = normalize(hash32(viewport*1000.+time)*2.-1.);
                 vec3 pos = Spot;
                 vec3 color = vec3(0);
                 const int count = 30;

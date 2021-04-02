@@ -3,16 +3,17 @@ const BlenderWebSocket = require('../lib/BlenderWebSocket')
 const BlenderHTML5Animations = require('../lib/blender-html5-animations.min')
 const animationData = require('../../blend/animation.json')
 
-console.log(animationData);
 
-// console.log(animationData);
 var animations = new BlenderHTML5Animations.ActionLibrary(animationData);
+// console.log(animationData);
+// var position = anims['CameraAction'].paths['location'].evaluate(elapsed);
+
 
 var elapsed = 0;
 var anims = {
     Camera: [0,0,-4],
     CameraTarget: [0,0,0],
-    Spot: [0,1,0],
+    Spot: [0,3,-5],
     SpotTarget: [0,0,0],
     Points: [0,0,0],
     KIF: [0,0,0],
