@@ -7,12 +7,12 @@
     })
     const glsl = x => x[0];
     const mat4 = require('gl-mat4')
-
     const axis = require('./mesh/axis')(regl)
     const grid = require('./mesh/grid')(regl)
-    const papillon = require('./mesh/papillon')(regl)
     const anims = require('./js/anims')
-    const sdfspray = require('./js/spray')(regl)
+    const Spray = require('./js/spray')
+    const spray = new Spray(regl);
+    const spray2 = new Spray(regl);
     // var audio = new Audio('music.mp3');
     // audio.play();
 
@@ -51,8 +51,18 @@
         scene((context) => {
             Object.keys(anims).forEach((key) => context[key] = anims[key] )
             regl.clear({ color: [0, 0, 0, 255] })
-            sdfspray(context)
-            papillon(context)
+            // axis(context)
+            // grid(context)
+            spray.draw(Object.assign({}, context, {
+                transform: mat4.invert([], mat4.lookAt([], anims.PapillonBleu, anims.PapillonBleuTarget, [0,1,0])),
+                colorHot: [0,1,0],
+                colorCold: [0.5,0,1],
+            }), 0)
+            spray2.draw(Object.assign({}, context, {
+                transform: mat4.invert([], mat4.lookAt([], anims.PapillonRouge, anims.PapillonRougeTarget, [0,1,0])),
+                colorHot: [1,1,0],
+                colorCold: [1,0,0.5],
+            }), 1)
         })
     })
 // }

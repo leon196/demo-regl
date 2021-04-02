@@ -1,6 +1,6 @@
 
 
-function sdfspray(regl) {
+function Spray(regl) {
     
     const anims = require('./anims')
     
@@ -8,9 +8,10 @@ function sdfspray(regl) {
     const dimension = 128;
     
     // 
-    const sdf = require('./sdf')(regl)
-    const sdfpoint = require('../mesh/point')(regl, dimension)
-    const sdfdebug = require('../mesh/debug')(regl)
+    this.sdf = require('./sdf')(regl)
+    this.sdfpoint = require('../mesh/point')(regl, dimension)
+    this.sdfdebug = require('../mesh/debug')(regl)
+    this.papillon = require('../mesh/papillon')(regl)
 
     // shared parameters
     const fboAttributes = {
@@ -20,63 +21,64 @@ function sdfspray(regl) {
     }
 
     // double fbos
-    const fboColor = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
-    const fboPosition = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
-    const fboNormal = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
+    this.fboColor = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
+    this.fboPosition = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
+    this.fboNormal = [regl.framebuffer(fboAttributes), regl.framebuffer(fboAttributes)]
 
     // clear color fbos
     const init = () => { regl.clear({ color: [0, 0, 0, 255] }) };
     for (var i = 0; i < 2; ++i) {
-        fboColor[i].use(init);
-        fboPosition[i].use(init);
-        fboNormal[i].use(init);
+        this.fboColor[i].use(init);
+        this.fboPosition[i].use(init);
+        this.fboNormal[i].use(init);
     }
 
-    return (context) => {
-
-        const tick = context.tick;
-
-        // shared uniforms
-        var uniforms = Object.assign({}, {
-            mode: 0,
-            frameColor: fboColor[tick%2],
-            framePosition: fboPosition[tick%2],
-            frameNormal: fboNormal[tick%2],
-        }, context);
-        
-        // console.log(uniforms);
-        
-        // Object.keys(anims).forEach((key, index) => {
-        //     uniforms[key] = anims[key];
-        // })
-
-        // color buffer
-        uniforms.mode = 0;
-        fboColor[(tick+1)%2].use(() => {
-            regl.clear({ color: [0, 0, 0, 255] })
-            sdf(uniforms);
-        })
-
-        // position buffer
-        uniforms.mode = 1;
-        fboPosition[(tick+1)%2].use(() => {
-            regl.clear({ color: [0, 0, 0, 255] })
-            sdf(uniforms);
-        })
-
-        // normal buffer
-        uniforms.mode = 2;
-        fboNormal[(tick+1)%2].use(() => {
-            regl.clear({ color: [0, 0, 0, 255] })
-            sdf(uniforms);
-        });
-
-        // points
-        sdfpoint(uniforms);
-
-        // debug
-        sdfdebug({frame: uniforms.frameColor});
-    }
+    this.regl = regl;
 }
 
-module.exports = sdfspray;
+Spray.prototype.draw = function(context, batchID) {
+
+    const tick = context.tick;
+
+    var self = this;
+    var regl = this.regl;
+
+    // shared uniforms
+    var uniforms = Object.assign({}, context);
+
+    uniforms.frameColor = self.fboColor[tick%2];
+    uniforms.framePosition = self.fboPosition[tick%2];
+    uniforms.frameNormal = self.fboNormal[tick%2];
+
+    // color buffer
+    uniforms.mode = 0;
+    self.fboColor[(tick+1)%2].use(() => {
+        regl.clear({ color: [0, 0, 0, 255] })
+        self.sdf(uniforms);
+    })
+
+    // position buffer
+    uniforms.mode = 1;
+    self.fboPosition[(tick+1)%2].use(() => {
+        regl.clear({ color: [0, 0, 0, 255] })
+        self.sdf(uniforms);
+    })
+
+    // normal buffer
+    uniforms.mode = 2;
+    self.fboNormal[(tick+1)%2].use(() => {
+        regl.clear({ color: [0, 0, 0, 255] })
+        self.sdf(uniforms);
+    });
+
+    // points
+    self.sdfpoint(uniforms);
+    
+    // papillon
+    self.papillon(uniforms);
+
+    // debug
+    self.sdfdebug({frame: uniforms.frameColor, offset: [batchID, 0]});
+}
+
+module.exports = Spray;

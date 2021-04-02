@@ -6,11 +6,12 @@ function sdfdebug(regl) {
         vert: glsl`
         precision mediump float;
         attribute vec2 uv;
-        uniform vec2 resolution;
+        uniform vec2 resolution, offset;
         varying vec2 vUV;
         void main() {
             vUV = uv;
             vec2 p = uv;
+            p += offset;
             p.x *= resolution.y/resolution.x;
             p = p*0.5-1.0;
             gl_Position = vec4(p, 0, 1);
@@ -31,6 +32,7 @@ function sdfdebug(regl) {
         },
         uniforms: {
             frame: regl.prop('frame'),
+            offset: regl.prop('offset'),
             resolution: ({viewportWidth, viewportHeight}) => [viewportWidth, viewportHeight],
         },
         depth: { enable: false },

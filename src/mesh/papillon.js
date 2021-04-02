@@ -16,7 +16,7 @@ function papillon(regl)
         
         uniform mat4 projection, view;
         uniform float time;
-        uniform vec3 eye, Spot;
+        uniform mat4 transform;
 
         varying vec2 uv;
 
@@ -34,15 +34,17 @@ function papillon(regl)
         }
 
         void main() {
-            vec3 p = position;
+            vec3 p = (transform * vec4(position, 1)).xyz;
 
-            p += Spot;
+            // p += transform;
+
 
             float size = 0.5;
             float speed = 10.0;
             
             // orientation
-            vec3 z = normalize(vec3(0,-0.5,1));
+            vec3 z = normalize(vec3(0,0,1));
+            z = (transform * vec4(z, 0)).xyz;
             vec3 x = normalize(cross(z, vec3(0,1,0)));
             vec3 y = normalize(cross(x, z));
             vec2 v = anchor;
@@ -71,17 +73,12 @@ function papillon(regl)
 
         frag:glsl`
         precision mediump float;
-
-        varying vec2 vQuantity;
         varying vec2 uv;
-        varying vec3 world;
-        
-        uniform vec3 eye;
         uniform float time;
+        uniform vec3 colorHot, colorCold;
         
         void main() {
-            vec3 color = vec3(1,0,0);
-            color = mix(vec3(1,1,0), color, pow(abs(uv.x), 0.5));
+            vec3 color = mix(colorHot, colorCold, pow(abs(uv.x), 0.5));
             // color *= abs(uv.x)*0.5+0.5;
             color *= smoothstep(0.9, 0.5, abs(uv.x));
             color = mix(color, vec3(1), smoothstep(0.9, 1.0, abs(uv.x)));
@@ -98,7 +95,9 @@ function papillon(regl)
             data: new Uint16Array(quads[0].indices.data),
         }),
         uniforms: {
-            Spot: regl.prop('Spot')
+            transform: regl.prop('transform'),
+            colorHot: regl.prop('colorHot'),
+            colorCold: regl.prop('colorCold'),
         }
     })
 }

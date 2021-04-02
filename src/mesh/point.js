@@ -118,7 +118,7 @@ function sdfpoints (regl, dimension)
         }),
         uniforms: {
             time: regl.prop('time'),
-            Points: regl.prop('Points'),
+            Points: regl.prop('ParameterPoints'),
             frameColor: regl.prop('frameColor'),
             framePosition: regl.prop('framePosition'),
             frameNormal: regl.prop('frameNormal'),

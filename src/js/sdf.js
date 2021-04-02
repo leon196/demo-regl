@@ -22,12 +22,13 @@ function sdf (regl)
         const int mode_position = 1;
         const int mode_normal = 2;
 
-        uniform vec3 eye;
-        uniform vec3 Spot, SpotTarget, KIF;
+        uniform vec3 ParameterKIF;
+        uniform mat4 transform;
         uniform float time;
         uniform int mode;
         uniform vec2 resolution;
         uniform sampler2D frameColor, framePosition, frameNormal;
+        uniform vec3 colorHot, colorCold;
 
         varying vec2 uv;
 
@@ -54,9 +55,9 @@ function sdf (regl)
             vec3 p0 = p;
 
             const int count = 2;
-            float radius = KIF.x;
-            float range = KIF.y;
-            float falloff = KIF.z;
+            float radius = ParameterKIF.x;
+            float range = ParameterKIF.y;
+            float falloff = ParameterKIF.z;
 
             float a = 1.0;
             for (int index = 0; index < count; ++index)
@@ -97,13 +98,14 @@ function sdf (regl)
             if (lifetime > 1.0)
             {
                 gl_FragColor.rgb = vec3(0);
+                vec3 origin = (transform * vec4(0,0,0,1)).xyz;
                 // raymarching
                 vec2 uvp = uv;
-                // uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.1;
+                uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.5;
                 vec2 viewport = (uvp*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
-                vec3 ray = look(Spot, SpotTarget, viewport);
+                vec3 ray = look(origin, vec3(0), viewport);
                 // vec3 ray = normalize(hash32(viewport*1000.+time)*2.-1.);
-                vec3 pos = Spot;
+                vec3 pos = origin;
                 vec3 color = vec3(0);
                 const int count = 30;
                 for (int index = 0; index < count; ++index)
@@ -115,8 +117,8 @@ function sdf (regl)
                         if (mode == mode_color)
                         {
                             float shade = float(count-index)/float(count);
-                            color = vec3(1,0,0) * shade;
-                            color += vec3(1,1,0) * pow(clamp(dot(normal, normalize(Spot-pos)), 0., 1.), 10.);
+                            color = colorCold * shade;
+                            color += colorHot * pow(clamp(dot(normal, normalize(origin-pos)), 0., 1.), 10.);
                             gl_FragColor.rgb = color * 0.5;
                         }
                         else if (mode == mode_position)
@@ -143,9 +145,10 @@ function sdf (regl)
         uniforms: {
             resolution: ({viewportWidth, viewportHeight}) => [viewportWidth, viewportHeight],
             mode: regl.prop('mode'),
-            Spot: regl.prop('Spot'),
-            SpotTarget: regl.prop('SpotTarget'),
-            KIF: regl.prop('KIF'),
+            transform: regl.prop('transform'),
+            colorHot: regl.prop('colorHot'),
+            colorCold: regl.prop('colorCold'),
+            ParameterKIF: regl.prop('ParameterKIF'),
             frameColor: regl.prop('frameColor'),
             framePosition: regl.prop('framePosition'),
             frameNormal: regl.prop('frameNormal'),

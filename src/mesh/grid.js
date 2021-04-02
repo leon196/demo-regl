@@ -3,8 +3,8 @@ const glsl = x => x[0];
 
 function grid (regl, width, height)
 {
-    width = width || 10;
-    height = height || 10;
+    width = width || 11;
+    height = height || 11;
 
     return regl({
         vert:glsl`
