@@ -22,7 +22,7 @@ function sdf (regl)
         const int mode_position = 1;
         const int mode_normal = 2;
 
-        uniform vec3 ParameterKIF, ParameterPoints;
+        uniform vec3 ParameterPoints;
         uniform mat4 transform;
         uniform float time;
         uniform int mode;
@@ -30,63 +30,13 @@ function sdf (regl)
         uniform sampler2D frameColor, framePosition, frameNormal;
         uniform vec3 colorHot, colorCold;
 
-        varying vec2 uv;
-
-        mat2 rot (in float a) { return mat2(cos(a),-sin(a),sin(a),cos(a)); }
-
-        // Dave Hoskins https://www.shadertoy.com/view/4djSRW
-        float hash11(float p) { p = fract(p * .1031); p *= p + 33.33; p *= p + p; return fract(p); }
-        float hash12(vec2 p) { vec3 p3  = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
-        vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
-        vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xx+p3.yz)*p3.zy); }
-        vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
-        vec3 hash32(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yxz+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
-
-        vec3 look (vec3 eye, vec3 forward, vec2 anchor) {
-            vec3 right = normalize(cross(forward, vec3(0,1,0)));
-            vec3 up = normalize(cross(right, forward));
-            return normalize(forward + right * anchor.x + up * anchor.y);
-        }
-
-        vec3 lookAt (vec3 eye, vec3 target, vec2 anchor) {
-            vec3 forward = normalize(target-eye);
-            vec3 right = normalize(cross(forward, vec3(0,1,0)));
-            vec3 up = normalize(cross(right, forward));
-            return normalize(forward + right * anchor.x + up * anchor.y);
-        }
-
-        float map(vec3 p)
-        {
-            float dist = 100.;
-            vec3 p0 = p;
-
-            const int count = 8;
-            float radius = -ParameterKIF.x;
-            float range = ParameterKIF.z;
-            float falloff = ParameterKIF.y;
-
-            float a = 1.0;
-            for (int index = 0; index < count; ++index)
-            {
-                p.xz *= rot(1.0/a);
-                p.yz *= rot(1.0/a);
-                p.xz = abs(p.xz) - range*a;
-                dist = min(dist, length(p)-radius*a);
-                a /= falloff;
-            }
-
-            dist = abs(dist)-0.01;
-
-            dist = min(dist, p0.y);
-
-            return dist;
-        }
-
-        // NuSan https://www.shadertoy.com/view/3sBGzV
-        vec3 getNormal(vec3 p) {
-            vec2 off=vec2(0.001,0);
-            return normalize(map(p)-vec3(map(p-off.xyy), map(p-off.yxy), map(p-off.yyx)));
-        }
+        varying vec2 uv;`
+        +
+        require('./glsl-common')
+        +
+        require('./sdf-map')
+        +
+        glsl`
 
         void main()
         {
@@ -127,7 +77,7 @@ function sdf (regl)
                             float shade = float(count-index)/float(count);
                             color = colorCold * shade;
                             color += colorHot * pow(clamp(dot(normal, normalize(origin-pos)), 0., 1.), 10.);
-                            gl_FragColor.rgb = color * 0.5;
+                            gl_FragColor.rgb = color;// * 0.5;
                         }
                         else if (mode == mode_position)
                         {
@@ -143,7 +93,7 @@ function sdf (regl)
                 }
                 lifetime = 0.0;
             }
-            lifetime += 0.001 + ParameterPoints.z * hash12(uv*100.);
+            lifetime += 0.001 + ParameterPoints.y * hash12(uv*100.);
             gl_FragColor.a = lifetime;
         }
         `,

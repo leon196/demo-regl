@@ -40,7 +40,7 @@ function papillon(regl)
             // p += transform;
 
 
-            float size = 0.5;
+            float size = 0.3;
             float speed = 10.0;
             
             // orientation

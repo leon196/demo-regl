@@ -1,83 +1,96 @@
 
+const storageKeys = {
+    rotX: 0,
+    rotY: 0.5,
+    distance : 10,
+}
 
-// document.getElementById("start").onclick = function()
-// {
-    const regl = require('regl')({
-        extensions: 'OES_texture_float'
-    })
-    const glsl = x => x[0];
-    const mat4 = require('gl-mat4')
-    const axis = require('./mesh/axis')(regl)
-    const grid = require('./mesh/grid')(regl)
-    const cookie = require('./mesh/cookie')(regl)
-    const anims = require('./js/anims')
-    const Spray = require('./js/spray')
-    const debug = require('./mesh/debug')(regl)
-    const spray = new Spray(regl);
-    const spray2 = new Spray(regl);
-    // var audio = new Audio('music.mp3');
-    // audio.play();
-    var elapsed = 0;
+Object.keys(storageKeys).forEach((key) => {
+    const item = localStorage.getItem(key)
+    if (item !== undefined && item !== null) {
+        var value = item.split(',').map(n => +n)
+        if (value.length == 1) value = value[0]
+        storageKeys[key] = value
+    }
+})
 
-    var scene = regl({
-        context: {
-            
-            projection: function (context) {
-            return mat4.perspective([],
-                Math.PI / 3,
-                context.viewportWidth / context.viewportHeight,
-                0.01, 100.0)
-            },
+const regl = require('regl')({ extensions: 'OES_texture_float' })
+const mat4 = require('gl-matrix').mat4
+const axis = require('./mesh/axis')(regl)
+const grid = require('./mesh/grid')(regl)
+const sdfdebug = require('./js/sdf-debug')(regl)
+const Camera = require('./js/camera')
+const Spray = require('./js/spray')
 
-            view: function () {
-                const from = anims.Camera;
-                const to = anims.CameraTarget;
-                return mat4.lookAt([], from, to, [0, 1, 0])
-            },
+const camera = new Camera(storageKeys);
+const spray = new Spray(regl)
 
-            time: function() { return regl.now() },
-
+var scene = regl({
+    context: {
+        time: function() {
+            return regl.now()
         },
 
-        uniforms: {
-            view: regl.context('view'),
-            projection: regl.context('projection'),
-            time: regl.context('time'),
-        }
-    });
+        resolution: function(context) {
+        return [
+            context.viewportWidth,
+            context.viewportHeight]
+        },
+        
+        projection: function (context) {
+        return mat4.perspective([],
+            Math.PI / 4,
+            context.viewportWidth / context.viewportHeight,
+            0.01,
+            1000.0)
+        },
 
-    regl.frame(() => {
-        scene((context) => {
-            const dt = Math.max(0, Math.min(1, regl.now() - elapsed));
-            anims.update(2 * dt);
-            elapsed = regl.now();
-            Object.keys(anims).forEach((key) => context[key] = anims[key] )
-            regl.clear({ color: [0, 0, 0, 255] })
+        view: function (context, props) {
+        return mat4.lookAt([],
+            props.eye,
+            props.target,
+            [0, 1, 0])
+        },
 
-            // axis(context)
-            // grid(context)
-            spray.draw(Object.assign({}, context, {
-                transform: mat4.invert([], mat4.lookAt([], anims.PapillonBleu, anims.PapillonBleuTarget, [0,1,0])),
-                offset: [0,0],
-                colorHot: [0,1,0],
-                colorCold: [0.5,0,1],
-            }))
-            spray2.draw(Object.assign({}, context, {
-                transform: mat4.invert([], mat4.lookAt([], anims.PapillonRouge, anims.PapillonRougeTarget, [0,1,0])),
-                offset: [1,0],
-                colorHot: [1,1,0],
-                colorCold: [1,0,0.5],
-            }))
+        ParameterKIF: [.8, 1.1, 1.8],
+        ParameterPoints: [.05, 0.01, 1.8],
+        transform: function(context) {
+            const t = context.time * 0.2
+            const r = 4
+            const x = Math.cos(t) * r
+            const y = Math.sin(t) * r
+            return mat4.invert([], mat4.lookAt([], [x,1,y], [0,0,0], [0,1,0]))
+        },
+        colorHot: [1,1,0],
+        colorCold: [1,0,0],
+        offset: [0,0],
+    },
+    uniforms: {
+        time: regl.context('time'),
+        view: regl.context('view'),
+        resolution: regl.context('resolution'),
+        projection: regl.context('projection'),
+    }
+});
 
-            // cookie(Object.assign({}, context, {
-            //     transform: mat4.invert([], mat4.lookAt([], anims.Cookie, anims.CookieTarget, [0,1,0])),
-            // }));
-
-            // debug
-            // debug({frame: spray.uniforms.frameColor, offset: [0, 0]});
-            // debug({frame: spray2.uniforms.frameColor, offset: [1, 0]});
-            // debug({frame: spray.uniforms.framePosition, offset: [1, 0]});
-            // debug({frame: spray.uniforms.frameNormal, offset: [2, 0]});
+regl.frame(() => {
+    camera.update()
+    scene({
+        eye: mat4.getTranslation([], camera.eye),
+        target: [0,0,0],
+    }, (context) => {
+        
+        Object.keys(storageKeys).forEach((key) => {
+            localStorage.setItem(key, camera[key])
         })
+        regl.clear({ color: [1, 1, 1, 1] })
+        // debug({frame: spray.uniforms.frameColor})
+        sdfdebug({
+            transform: mat4.invert([], mat4.lookAt([], mat4.getTranslation([], camera.eye), [0,0,0], [0,1,0])),
+            ParameterKIF: context.ParameterKIF,
+        })
+        axis()
+        grid()
+        spray.draw(context)
     })
-// }
+})

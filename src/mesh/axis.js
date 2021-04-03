@@ -30,9 +30,6 @@ function axis (regl)
             primitive: 'lines',
             data: new Uint16Array([0,1,2,3,4,5]),
         }),
-        uniforms: {
-            time: regl.prop('time')
-        },
     })
 }
 

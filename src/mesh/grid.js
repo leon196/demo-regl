@@ -44,9 +44,6 @@ function grid (regl, width, height)
                 return [index*2, index*2+1];
             }).flat()),
         }),
-        uniforms: {
-            time: regl.prop('time')
-        },
     })
 }
 

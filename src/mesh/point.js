@@ -18,7 +18,7 @@ function sdfpoints (regl, dimension)
         attribute vec3 position;
         attribute vec2 anchor, quantity;
         
-        uniform mat4 projection, view;
+        uniform mat4 projection, view, transform;
         uniform vec3 Points;
         uniform float time;
         uniform sampler2D frameColor, framePosition, frameNormal;
@@ -45,10 +45,15 @@ function sdfpoints (regl, dimension)
             // jitter
             // uv += (hash22(position.xy*200.)*2.0-1.0)*0.01;
 
+            vec3 origin = (transform * vec4(0,0,0,1)).xyz;
+
             // attributes
             vColor = texture2D(frameColor, uv).rgb;
             vec3 p = texture2D(framePosition, uv).rgb;
             vec3 n = texture2D(frameNormal, uv).rgb;
+            float lifetime = texture2D(framePosition, uv).a;
+
+            p = mix(origin, p, pow(lifetime, 0.1));
 
             // size
             float size = Points.x + Points.y * pow(hash11(quantity.y+145.), 10.0);
@@ -57,8 +62,7 @@ function sdfpoints (regl, dimension)
             size *= smoothstep(0.0, 0.1, luminance(vColor));
 
             // lifetime fade out
-            float lifetime = texture2D(framePosition, uv).a;
-            size *= pow(sin(lifetime*3.14), 0.5);
+            size *= pow(sin(lifetime*3.14), 0.1);
 
             // orientation
             vec3 z = n+.001;//normalize(eye-p);
@@ -119,14 +123,15 @@ function sdfpoints (regl, dimension)
         uniforms: {
             time: regl.prop('time'),
             Points: regl.prop('ParameterPoints'),
+            transform: regl.prop('transform'),
             frameColor: regl.prop('frameColor'),
             framePosition: regl.prop('framePosition'),
             frameNormal: regl.prop('frameNormal'),
         },
-        cull: {
-            enable: true,
-            face: 'back'
-        },
+        // cull: {
+        //     enable: true,
+        //     face: 'back'
+        // },
     })
 }
 
