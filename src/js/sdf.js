@@ -50,14 +50,14 @@ function sdf (regl)
                 gl_FragColor = texture2D(frameNormal, uv);
 
             // spawn
-            float lifetime = texture2D(framePosition, uv).a;
+            float lifetime = texture2D(frameColor, uv).a;
             if (lifetime > 1.0)
             {
                 gl_FragColor.rgb = vec3(0);
                 vec3 origin = (transform * vec4(0,0,0,1)).xyz;
                 // raymarching
                 vec2 uvp = uv;
-                uvp += (hash22(uv.xy*200.)*2.0-1.0)*0.1;
+                uvp += (hash22(uv.xy*200.+time)*2.0-1.0)*0.1;
                 vec2 viewport = (uvp*2.-1.);//*vec2(resolution.x/resolution.y,1.0);
                 // viewport = normalize(viewport) * pow(length(viewport), 100.);
                 vec3 forward = (transform * vec4(0,0,-1,0)).xyz;
@@ -74,6 +74,7 @@ function sdf (regl)
                         vec3 normal = getNormal(pos);
                         if (mode == mode_color)
                         {
+                            // color
                             float shade = float(count-index)/float(count);
                             color = colorCold * shade;
                             color += colorHot * pow(clamp(dot(normal, normalize(origin-pos)), 0., 1.), 10.);
@@ -81,7 +82,11 @@ function sdf (regl)
                         }
                         else if (mode == mode_position)
                         {
+                            // position
                             gl_FragColor.rgb = pos;
+
+                            // depth
+                            gl_FragColor.a = length(pos - origin);
                         }
                         else // if (mode == mode_normal)
                         {
@@ -93,21 +98,19 @@ function sdf (regl)
                 }
                 lifetime = 0.0;
             }
-            lifetime += 0.001 + ParameterPoints.y * hash12(uv*100.);
-            gl_FragColor.a = lifetime;
+
+            // lifetime
+            if (mode == mode_color) {
+                lifetime += 0.001 + ParameterPoints.y * hash12(uv*100.);
+                gl_FragColor.a = lifetime;
+            }
         }
         `,
         attributes: {
             position: [ -4, -4, 4, -4, 0, 4 ]
         },
         uniforms: {
-            resolution: ({viewportWidth, viewportHeight}) => [viewportWidth, viewportHeight],
             mode: regl.prop('mode'),
-            transform: regl.prop('transform'),
-            colorHot: regl.prop('colorHot'),
-            colorCold: regl.prop('colorCold'),
-            ParameterKIF: regl.prop('ParameterKIF'),
-            ParameterPoints: regl.prop('ParameterPoints'),
             frameColor: regl.prop('frameColor'),
             framePosition: regl.prop('framePosition'),
             frameNormal: regl.prop('frameNormal'),

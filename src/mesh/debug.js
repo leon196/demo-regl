@@ -6,15 +6,15 @@ function debug(regl) {
         vert: glsl`
         precision mediump float;
         attribute vec2 uv;
-        uniform vec2 resolution;//, offset;
+        uniform vec2 resolution, offset;
         varying vec2 vUV;
         void main() {
             vUV = uv;
             vec2 p = uv;
-            // p += offset;
-            // p.x *= resolution.y/resolution.x;
-            // p = p*0.5-1.0;
-            gl_Position = vec4(p*2.-1., 0, 1);
+            p += offset;
+            p.x *= resolution.y/resolution.x;
+            p = p*0.5-1.0;
+            gl_Position = vec4(p, 0, 1);
         }`,
 
         frag: glsl`
@@ -32,8 +32,7 @@ function debug(regl) {
         },
         uniforms: {
             frame: regl.prop('frame'),
-            // offset: regl.prop('offset'),
-            resolution: ({viewportWidth, viewportHeight}) => [viewportWidth, viewportHeight],
+            offset: regl.prop('offset'),
         },
         depth: { enable: false },
         primitive: 'triangle strip',

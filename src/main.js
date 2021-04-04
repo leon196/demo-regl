@@ -18,6 +18,7 @@ const regl = require('regl')({ extensions: 'OES_texture_float' })
 const mat4 = require('gl-matrix').mat4
 const axis = require('./mesh/axis')(regl)
 const grid = require('./mesh/grid')(regl)
+const debug = require('./mesh/debug')(regl)
 const sdfdebug = require('./js/sdf-debug')(regl)
 const Camera = require('./js/camera')
 const Spray = require('./js/spray')
@@ -27,70 +28,51 @@ const spray = new Spray(regl)
 
 var scene = regl({
     context: {
-        time: function() {
-            return regl.now()
-        },
+        view: (context, props) => { return mat4.lookAt([], mat4.getTranslation([], camera.eye), [0,0,0], [0, 1, 0]) },
+        projection: (context) => { return mat4.perspective([], Math.PI / 4, context.viewportWidth / context.viewportHeight, 0.01, 1000.0) }
+    },
+    uniforms: {
 
-        resolution: function(context) {
-        return [
-            context.viewportWidth,
-            context.viewportHeight]
-        },
-        
-        projection: function (context) {
-        return mat4.perspective([],
-            Math.PI / 4,
-            context.viewportWidth / context.viewportHeight,
-            0.01,
-            1000.0)
-        },
+        time: () => { return regl.now() },
+        resolution: (context) => { return [ context.viewportWidth, context.viewportHeight ] },
 
-        view: function (context, props) {
-        return mat4.lookAt([],
-            props.eye,
-            props.target,
-            [0, 1, 0])
-        },
+        view: (context) => context.view,
+        viewInvert: (context) => { return mat4.invert([], context.view) },
+        projection: (context) => { return context.projection },
+        projectionInvert: (context) => { return mat4.invert([], context.projection) },
 
-        ParameterKIF: [.8, 1.1, 1.8],
-        ParameterPoints: [.05, 0.01, 1.8],
-        transform: function(context) {
+        transform: (context) => {
             const t = context.time * 0.2
-            const r = 4
+            const r = 3
             const x = Math.cos(t) * r
-            const y = Math.sin(t) * r
-            return mat4.invert([], mat4.lookAt([], [x,1,y], [0,0,0], [0,1,0]))
+            const z = Math.sin(t) * r
+            const y = 4
+            return mat4.invert([], mat4.lookAt([], [x,y,z], [0,0,0], [0,1,0]))
         },
+
         colorHot: [1,1,0],
         colorCold: [1,0,0],
         offset: [0,0],
-    },
-    uniforms: {
-        time: regl.context('time'),
-        view: regl.context('view'),
-        resolution: regl.context('resolution'),
-        projection: regl.context('projection'),
+
+        ParameterKIF: [.8, 1.2, 1.8],
+        ParameterPoints: [.01, 0.02, 0.01],
     }
 });
 
 regl.frame(() => {
     camera.update()
-    scene({
-        eye: mat4.getTranslation([], camera.eye),
-        target: [0,0,0],
-    }, (context) => {
+    scene(() => {
         
         Object.keys(storageKeys).forEach((key) => {
             localStorage.setItem(key, camera[key])
         })
-        regl.clear({ color: [1, 1, 1, 1] })
-        // debug({frame: spray.uniforms.frameColor})
-        sdfdebug({
-            transform: mat4.invert([], mat4.lookAt([], mat4.getTranslation([], camera.eye), [0,0,0], [0,1,0])),
-            ParameterKIF: context.ParameterKIF,
-        })
-        axis()
-        grid()
-        spray.draw(context)
+        
+        regl.clear({ color: [0, 0, 0, 1] })
+        // axis()
+        // grid()
+        spray.draw()
+        debug({ frame: spray.uniforms.frameColor, offset: [0,0] })
+        debug({ frame: spray.uniforms.framePosition, offset: [0,1] })
+        // sdfdebug()
     })
 })

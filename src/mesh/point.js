@@ -19,21 +19,19 @@ function sdfpoints (regl, dimension)
         attribute vec2 anchor, quantity;
         
         uniform mat4 projection, view, transform;
-        uniform vec3 Points;
+        uniform vec3 ParameterPoints;
         uniform float time;
         uniform sampler2D frameColor, framePosition, frameNormal;
 
         varying vec3 vColor;
         varying vec2 vUV;
         varying float vShape;
-
-        mat2 rot (in float a) { return mat2(cos(a),-sin(a),sin(a),cos(a)); }
-
-        // Dave Hoskins https://www.shadertoy.com/view/4djSRW
-        float hash11(float p) { p = fract(p * .1031); p *= p + 33.33; p *= p + p; return fract(p); }
-        vec2 hash21(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xx+p3.yz)*p3.zy); }
-        vec2 hash22(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xx+p3.yz)*p3.zy); }
-        vec3 hash31(float p) { vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx+33.33); return fract((p3.xxy+p3.yzz)*p3.zyx); }
+        
+        `
+        +
+        require('../js/glsl-common')
+        +
+        glsl`
 
         float luminance(vec3 c) { return (c.r+c.g+c.b)/3.; }
 
@@ -48,21 +46,26 @@ function sdfpoints (regl, dimension)
             vec3 origin = (transform * vec4(0,0,0,1)).xyz;
 
             // attributes
-            vColor = texture2D(frameColor, uv).rgb;
-            vec3 p = texture2D(framePosition, uv).rgb;
-            vec3 n = texture2D(frameNormal, uv).rgb;
-            float lifetime = texture2D(framePosition, uv).a;
+            vec4 color = texture2D(frameColor, uv);
+            vec4 pos = texture2D(framePosition, uv);
+            vec4 normal = texture2D(frameNormal, uv);
 
-            p = mix(origin, p, pow(lifetime, 0.1));
+            vec3 n = normal.rgb;
+            vec3 p = pos.rgb;
+            float lifetime = color.a;
+            float depth = pos.a;
+            vColor = color.rgb;
+
+            // p = mix(origin, p, pow(lifetime, 0.1));
 
             // size
-            float size = Points.x + Points.y * pow(hash11(quantity.y+145.), 10.0);
+            float size = ParameterPoints.x + ParameterPoints.y * pow(hash13(p*145.), 10.0) + ParameterPoints.z * depth;
 
             // color fade out
             size *= smoothstep(0.0, 0.1, luminance(vColor));
 
             // lifetime fade out
-            size *= pow(sin(lifetime*3.14), 0.1);
+            // size *= pow(sin(lifetime*3.14), 0.1);
 
             // orientation
             vec3 z = n+.001;//normalize(eye-p);
@@ -95,17 +98,17 @@ function sdfpoints (regl, dimension)
         }
         void main()
         {
-            // circle
-            if (vShape == 0.0) {
-                float dist = length(vUV);
-                if (dist > 1.0) discard;
-            }
-            // triangle
-            else if (abs(vShape-1.0) < 0.5) {
-                vec2 p = moda(vUV, 3.);
-                p.x -= 0.5;
-                if (p.x > 0.) discard;
-            }
+            // // circle
+            // if (vShape == 0.0) {
+            //     float dist = length(vUV);
+            //     if (dist > 1.0) discard;
+            // }
+            // // triangle
+            // else if (abs(vShape-1.0) < 0.5) {
+            //     vec2 p = moda(vUV, 3.);
+            //     p.x -= 0.5;
+            //     if (p.x > 0.) discard;
+            // }
 
             // color
             gl_FragColor = vec4(vec3(vColor), 1.0);
@@ -121,17 +124,14 @@ function sdfpoints (regl, dimension)
             data: new Uint16Array(quads[0].indices.data),
         }),
         uniforms: {
-            time: regl.prop('time'),
-            Points: regl.prop('ParameterPoints'),
-            transform: regl.prop('transform'),
             frameColor: regl.prop('frameColor'),
             framePosition: regl.prop('framePosition'),
             frameNormal: regl.prop('frameNormal'),
         },
-        // cull: {
-        //     enable: true,
-        //     face: 'back'
-        // },
+        cull: {
+            enable: true,
+            face: 'back'
+        },
     })
 }
 
